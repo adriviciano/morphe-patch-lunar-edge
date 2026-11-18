@@ -38,6 +38,16 @@ fun main(args: Array<String>) {
     check(classes.containsKey("Lcom/android/cast/dlna/dmc/DLNACastManager;"))
     check(method("${root}ui/JYAlternativeZero;", "transformRules").implementation != null)
     check(method("${root}ui/JYAlternativeZero;", "willWindow").implementation != null)
+    if (classes.containsKey("Llocal/lunaredge/cast/CastBridge;")) {
+        for (entry in listOf("transformRules", "willWindow")) {
+            val first = method("${root}ui/JYAlternativeZero;", entry).implementation!!.instructions.first()
+            check((first as ReferenceInstruction).reference.toString() == "Llocal/lunaredge/cast/CastBridge;->show(Landroid/app/Activity;)V")
+        }
+        check(method("${root}ui/JYAlternativeZero;", "lunarDlnaPortrait").implementation != null)
+        check(method("${root}ui/JYAlternativeZero;", "lunarDlnaLandscape").implementation != null)
+        check(classes.containsKey("Llocal/lunaredge/cast/CastSession;"))
+        println("OK: selector Cast, sesión y alternativas DLNA.")
+    }
     check(classes.keys.none { it.startsWith("Llocal/lunaredge/diagnostic/") }) {
         "La APK contiene instrumentación temporal. Parte de un original limpio."
     }

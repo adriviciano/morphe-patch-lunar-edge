@@ -1,37 +1,74 @@
-param()
+param(
+    [string]$Version = '0.2.0-beta.1',
+    [switch]$CastPreview
+)
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
-# Las herramientas se guardan en el proyecto; no se necesitan credenciales de GitHub.
+# Las herramientas y salidas se mantienen dentro del proyecto.
 $compiler = Join-Path $PSScriptRoot 'tools\kotlin-current\kotlinc\bin\kotlinc.bat'
 $morphe = Join-Path $PSScriptRoot 'tools\morphe-desktop.jar'
 $jadx = Join-Path $PSScriptRoot 'tools\jadx\lib\jadx-1.5.6-all.jar'
 foreach ($toolPath in @($compiler, $morphe, $jadx)) {
     if (-not (Test-Path -LiteralPath $toolPath)) { throw "Falta la herramienta: $toolPath. Consulta README.md." }
 }
-New-Item -ItemType Directory -Force build\classes, build\dex, dist | Out-Null
-& $compiler 'src\main\kotlin\lunar-edge-patches.kt' -classpath $morphe -jvm-target 11 '-Xlambdas=class' -d 'build\classes'
+$sdkRoot = $env:ANDROID_HOME
+if (-not $sdkRoot) { $sdkRoot = Join-Path $env:USERPROFILE 'AppData\Local\Android\Sdk' }
+$androidJar = Join-Path $sdkRoot 'platforms\android-35\android.jar'
+if (-not (Test-Path -LiteralPath $androidJar)) { throw 'Falta Android SDK Platform 35. Configura ANDROID_HOME.' }
+
+$flavor = if ($CastPreview) { 'cast-preview' } else { 'patches' }
+$work = Join-Path $PSScriptRoot "build\$Version-$flavor"
+$classes = Join-Path $work 'classes'
+$castClasses = Join-Path $work 'cast-classes'
+$castDex = Join-Path $work 'cast-dex'
+$dex = Join-Path $work 'dex'
+New-Item -ItemType Directory -Force $classes, $castClasses, $castDex, $dex, (Join-Path $classes 'extensions'), dist | Out-Null
+
+$castSources = Get-ChildItem extensions\cast\src -Filter '*.java' -Recurse | Select-Object -ExpandProperty FullName
+& javac --release 11 -cp $androidJar -d $castClasses $castSources
+if ($LASTEXITCODE -ne 0) { throw 'Falló la compilación de la extensión Cast.' }
+$extensionJar = Join-Path $work 'cast-extension.jar'
+& jar --create --file $extensionJar -C $castClasses .
+if ($LASTEXITCODE -ne 0) { throw 'Falló la creación de la extensión Cast.' }
+& java -cp $jadx com.android.tools.r8.D8 --release --min-api 24 --lib $androidJar --output $castDex $extensionJar
+if ($LASTEXITCODE -ne 0) { throw 'Falló la conversión DEX de Cast.' }
+Copy-Item (Join-Path $castDex 'classes.dex') (Join-Path $classes 'extensions\cast.mpe') -Force
+
+if ($CastPreview) {
+    # Un único parche predeterminado permite identificar inequívocamente la prueba instalada.
+    $previewSource = Join-Path $work 'google-cast-patch.kt'
+    $source = (Get-Content src\main\kotlin\google-cast-patch.kt -Raw).Replace('default = false', 'default = true')
+    [IO.File]::WriteAllText($previewSource, $source, [Text.UTF8Encoding]::new($false))
+    $patchSources = @($previewSource)
+    $bundleName = 'Lunar Edge Cast Preview beta 1'
+} else {
+    $patchSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Select-Object -ExpandProperty FullName)
+    $bundleName = 'Lunar Edge local patches'
+}
+& $compiler $patchSources -classpath $morphe -jvm-target 11 '-Xlambdas=class' -d $classes
 if ($LASTEXITCODE -ne 0) { throw 'Falló la compilación Kotlin.' }
 
 $manifest = @"
 Manifest-Version: 1.0
-Name: Lunar Edge local patches
-Description: Parches locales para los anuncios del reproductor
-Version: 0.1.2
+Name: $bundleName
+Description: Parches locales para Lunar Edge
+Version: $Version
 Author: Lunar Edge local patches
 Source: https://github.com/adriviciano/morphe-patch-lunar-edge
 Website: https://github.com/adriviciano/morphe-patch-lunar-edge
 License: GPL-3.0-only
 
 "@
-[IO.File]::WriteAllText((Join-Path $PSScriptRoot 'build\MANIFEST.MF'), $manifest, [Text.UTF8Encoding]::new($false))
-& jar --create --file 'dist\lunar-edge-patches-0.1.2.mpp' --manifest 'build\MANIFEST.MF' -C 'build\classes' .
+$manifestPath = Join-Path $work 'MANIFEST.MF'
+[IO.File]::WriteAllText($manifestPath, $manifest, [Text.UTF8Encoding]::new($false))
+$bundle = Join-Path $PSScriptRoot "dist\lunar-edge-$flavor-$Version.mpp"
+& jar --create --file $bundle --manifest $manifestPath -C $classes .
 if ($LASTEXITCODE -ne 0) { throw 'Falló la creación del paquete.' }
-
-# Se incluye DEX para Morphe Manager y clases JVM para Morphe Desktop.
-Copy-Item -LiteralPath 'dist\lunar-edge-patches-0.1.2.mpp' -Destination 'build\patches.jar' -Force
-& java -cp $jadx com.android.tools.r8.D8 --release --min-api 26 --classpath $morphe --output 'build\dex' 'build\patches.jar'
+$patchesJar = Join-Path $work 'patches.jar'
+Copy-Item -LiteralPath $bundle -Destination $patchesJar -Force
+& java -cp $jadx com.android.tools.r8.D8 --release --min-api 26 --classpath $morphe --output $dex $patchesJar
 if ($LASTEXITCODE -ne 0) { throw 'Falló la conversión DEX.' }
-& jar --update --file 'dist\lunar-edge-patches-0.1.2.mpp' -C 'build\dex' classes.dex
+& jar --update --file $bundle -C $dex classes.dex
 if ($LASTEXITCODE -ne 0) { throw 'Falló la inclusión de classes.dex.' }
-Write-Host 'Creado dist\lunar-edge-patches-0.1.2.mpp'
+Write-Host "Creado $bundle"

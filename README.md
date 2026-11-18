@@ -2,6 +2,10 @@
 
 Paquete experimental para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
 
+## Google Cast en pruebas
+
+La versión estable sigue siendo **0.1.2**. La [beta 0.2.0-beta.1](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/tag/v0.2.0-beta.1) añade una prueba separada de Google Cast. [Instrucciones desde el móvil](CAST_PREVIEW.md). La fuente local **Lunar Edge Cast Preview beta 1** contiene únicamente el parche Cast seleccionado por defecto y muestra el título **Google Cast · beta 1**.
+
 ## Archivos preparados
 
 - `dist/lunar-edge-patches-0.1.2.mpp`: paquete para Morphe, con clases JVM y `classes.dex` para Android.
@@ -65,7 +69,7 @@ Si usaste los paquetes locales de diagnóstico durante las pruebas, desactiva es
 
 La APK original ya incluye DLNA/UPnP, búsqueda de receptores y botones de envío en ambas orientaciones del reproductor principal. `transformRules()` y `willWindow()` abren los selectores y envían la URL del vídeo mediante `DeviceControl`. Los parches conservan estas rutas.
 
-No se ha añadido Google Cast. Para dispositivos Chromecast/Google TV hace falta integrar un emisor Google Cast y sus dependencias, o delegar en una aplicación de envío instalada en Android. DLNA por sí solo no ofrece compatibilidad con cualquier Chromecast. La TV debe poder acceder a la URL y admitir el formato del vídeo; compartir red no garantiza compatibilidad con todas las fuentes.
+La estable 0.1.2 no añade Google Cast. La beta incorpora un emisor Cast V2 con descubrimiento NSD, selector de TV y controles de reproducción, pausa, posición y volumen. Permite introducir una IP local cuando falla el descubrimiento y prioriza IPv4 cuando Android ofrece varias direcciones. Conserva el selector DLNA como alternativa. La reproducción y pausa de un vídeo de prueba se han confirmado en una Android TV; sigue pendiente validar las fuentes reales de Lunar Edge dentro de la app y el funcionamiento con pantalla apagada. No utiliza código ni bibliotecas de PyChromecast dentro de la APK.
 
 ## Referencias
 
@@ -77,4 +81,6 @@ No se redistribuyen las herramientas ni el XAPK en el repositorio. Este proyecto
 
 ## Publicación
 
-Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete. La etiqueta `v0.1.2` ejecuta GitHub Actions, vuelve a compilar y publica el `.mpp`, los metadatos y su SHA256 en Releases. No se suben APK, XAPK ni claves locales de firma.
+La compilación de la beta requiere además Android SDK Platform 35 (`ANDROID_HOME`). `build.ps1 -CastPreview` genera el paquete de prueba de un único parche; `scripts/test-cast.ps1` verifica el protocolo y que el parche esté seleccionado por defecto. Los directorios de compilación están separados por versión y modalidad.
+
+Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete completo. Las etiquetas ejecutan GitHub Actions, que publica los paquetes, metadatos y SHA256 en Releases. Las versiones con sufijo se publican como prerelease y no sustituyen la estable. No se suben APK, XAPK ni claves locales de firma.
