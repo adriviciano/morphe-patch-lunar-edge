@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
 
 /** Selector y controles de Google Cast integrados en el reproductor existente. */
 public final class CastBridge {
-    private static final String SCREEN_TITLE = "Google Cast · beta 2";
+    private static final String SCREEN_TITLE = "Google Cast · beta 3";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static CastSession current;
     private static Controls controls;
@@ -373,11 +373,56 @@ public final class CastBridge {
             button(activity, buttons, "Reproducir", () -> session.command("PLAY"));
             button(activity, buttons, "Pausar", () -> session.command("PAUSE"));
             layout.addView(buttons);
+            Button diagnostics = new Button(activity);
+            diagnostics.setText("Diagnóstico de carga");
+            diagnostics.setOnClickListener(view -> diagnose(activity));
+            layout.addView(diagnostics);
             dialog = new AlertDialog.Builder(activity).setTitle(name).setView(layout)
                     .setNegativeButton("Cerrar controles", null)
                     .setPositiveButton("Dejar de emitir", (d, which) -> { if (session.isActive()) session.stop(); }).create();
             dialog.setOnDismissListener(d -> { status = null; seek = null; volume = null; dialog = null; });
             dialog.show();
+        }
+        private void diagnose(Activity activity) {
+            TextView message = new TextView(activity);
+            message.setText("Comprobando la fuente desde el móvil…");
+            message.setTextIsSelectable(true);
+            LinearLayout layout = column(activity);
+            layout.addView(message);
+            AlertDialog reportDialog = new AlertDialog.Builder(activity).setTitle("Diagnóstico Cast · beta 3")
+                    .setView(layout).setNegativeButton("Cerrar", null).setPositiveButton("Copiar informe", null).create();
+            reportDialog.setOnShowListener(ignored -> reportDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false));
+            reportDialog.show();
+            java.util.concurrent.ExecutorService probe = Executors.newSingleThreadExecutor();
+            probe.execute(() -> {
+                String report;
+                try {
+                    URI parsed = new URI(media.url);
+                    boolean local = "127.0.0.1".equals(parsed.getHost()) || "localhost".equalsIgnoreCase(parsed.getHost());
+                    String wifiAddress = address(activity, wifi(activity));
+                    String sent = media.networkUrl(wifiAddress);
+                    String mime = media.url.toLowerCase(Locale.ROOT).contains(".m3u8") ? "HLS" : "MP4";
+                    report = "Cast beta 3\nFuente: " + (local ? "motor local" : "remota") +
+                            "; formato enviado: " + mime + "; inicio: " + (int) media.position + " s\n" +
+                            "Respuesta TV: " + (state.contains("LOAD_FAILED") ? "LOAD_FAILED" : state.contains("no puede reproducir") ? "IDLE ERROR" : "otro estado") + "\n" +
+                            CastDiagnostics.probe("Fuente original", media.url);
+                    if (local && wifiAddress != null) report += "\n" + CastDiagnostics.probe("Dirección LAN enviada a TV", sent);
+                    report += "\nPruebas HTTP realizadas desde el móvil; no confirman el acceso desde la TV. No se incluyen URL ni tokens.";
+                } catch (Exception error) { report = "Cast beta 3: " + error.getClass().getSimpleName(); }
+                final String result = report;
+                MAIN.post(() -> {
+                    if (activity.isFinishing() || activity.isDestroyed() || !reportDialog.isShowing()) return;
+                    message.setText(result);
+                    Button copy = reportDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                    copy.setEnabled(true);
+                    copy.setOnClickListener(view -> {
+                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Diagnóstico Cast", result));
+                        Toast.makeText(activity, "Informe copiado", Toast.LENGTH_SHORT).show();
+                    });
+                });
+                probe.shutdown();
+            });
         }
         public void changed(String newState, double newPosition, double newDuration) {
             MAIN.post(() -> {

@@ -11,7 +11,7 @@ fun main(args: Array<String>) {
     check(cast.dependencies.any { it.name == "Fix local video engine" }) { "Cast debe depender de la corrección del motor." }
     check(cast.compatibility!!.single().packageName == "com.lunaredge.browser")
     JarFile(file).use { jar ->
-        check(jar.manifest.mainAttributes.getValue("Name") == "Lunar Edge Cast Complete beta 2")
+        check(jar.manifest.mainAttributes.getValue("Name") == "Lunar Edge Cast Complete beta 3")
         check(jar.getEntry("classes.dex") != null)
         val extension = jar.getInputStream(jar.getEntry("extensions/cast.mpe")).use { it.readBytes() }
         check(extension.copyOfRange(0, 3).toString(Charsets.US_ASCII) == "dex")
