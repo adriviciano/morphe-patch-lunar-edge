@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
     val repository = "https://github.com/adriviciano/morphe-patch-lunar-edge"
     val metadata = mapOf(
         "created_at" to "2026-11-18T11:00:00",
-        "description" to "Google Cast beta 3 para Lunar Edge 4.0.2: diagnóstico copiable de LOAD_FAILED sin URL ni tokens. Incluye los cuatro parches y reparación obligatoria del motor. Pendiente de diagnosticar la carga de las fuentes reales.",
+        "description" to "Google Cast beta 4 para Lunar Edge 4.0.2: puente CORS para HLS del motor local y contadores de acceso de la TV. Cuatro parches con reparación obligatoria del motor. Pendiente prueba de reproducción real.",
         "download_url" to "$repository/releases/download/v$version/lunar-edge-patches-$version.mpp",
         "signature_download_url" to "",
         "version" to version

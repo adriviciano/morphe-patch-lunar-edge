@@ -14,7 +14,7 @@ private const val CAST_PLAYER = "Lchuangyuan/ycj/videolibrary/video/ExoUserPlaye
 @Suppress("unused")
 val enableGoogleCast = patch(
     name = "Enable Google Cast (experimental)",
-    description = "Añade el selector Google Cast beta 3 y controles. Incluye obligatoriamente la corrección del motor local. Mantiene DLNA como alternativa. Pendiente de validar la fuente real de Lunar Edge.",
+    description = "Añade Google Cast beta 4 con puente CORS para HLS local y controles. Exige la corrección del motor. Conserva DLNA. Pendiente de validar reproducción real.",
     default = false
 ) {
     compatibleWith(Compatibility(packageName = "com.lunaredge.browser", name = "Lunar Edge", targets = listOf(AppTarget("4.0.2", 40002))))

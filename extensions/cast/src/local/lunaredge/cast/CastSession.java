@@ -36,7 +36,10 @@ public final class CastSession implements Closeable {
 
     private final Listener listener;
     private final String sender = "sender-lunar-" + UUID.randomUUID();
-    private final String url;
+    private String url;
+    private String relayAddress;
+    private java.net.InetAddress relayReceiver;
+    private volatile CastRelay relay;
     private final String title;
     private final double initialPosition;
     private final AtomicInteger request = new AtomicInteger();
@@ -62,9 +65,25 @@ public final class CastSession implements Closeable {
 
     public boolean isActive() { return !closed; }
 
+    // Se configura en el hilo principal, pero el servidor solo se abre en el trabajador de conexión.
+    public void useLocalRelay(String address, java.net.InetAddress receiver) {
+        relayAddress = address;
+        relayReceiver = receiver;
+    }
+
+    public String relayReport() {
+        CastRelay current = relay;
+        return current == null ? "Puente CORS: no iniciado" : current.report();
+    }
+
     public void connect(Socket connection, String host, int port) {
         workers.execute(() -> {
             try {
+                if (relayAddress != null) synchronized (this) {
+                    if (closed) throw new IOException("Sesión cerrada");
+                    relay = new CastRelay(java.net.InetAddress.getByName(relayAddress), relayReceiver);
+                    url = relay.url(url);
+                }
                 SSLContext context = SSLContext.getInstance("TLS");
                 // Cast utiliza certificados autofirmados. Esta confianza se limita al socket LAN elegido.
                 context.init(null, new TrustManager[]{new X509TrustManager() {
@@ -123,7 +142,7 @@ public final class CastSession implements Closeable {
                 receiverSession = found.getString("sessionId");
                 send(transport, CONNECTION, object("type", "CONNECT", "origin", new JSONObject()));
                 JSONObject metadata = object("metadataType", 0, "title", title);
-                String mime = url.toLowerCase().contains(".m3u8") ? "application/x-mpegURL" : "video/mp4";
+                String mime = relay != null || url.toLowerCase().contains(".m3u8") ? "application/x-mpegURL" : "video/mp4";
                 JSONObject media = object("contentId", url, "streamType", "BUFFERED", "contentType", mime, "metadata", metadata);
                 send(transport, MEDIA, object("type", "LOAD", "requestId", next(), "sessionId", receiverSession,
                         "autoplay", true, "currentTime", initialPosition, "media", media));
@@ -197,8 +216,9 @@ public final class CastSession implements Closeable {
         CastWire.write(output, CastWire.encode(sender, destination, namespace, data.toString()));
     }
     private void fail(String message) { if (!closed) { close(); listener.failed(message); } }
-    @Override public void close() {
+    @Override public synchronized void close() {
         closed = true;
+        if (relay != null) relay.close();
         workers.shutdownNow();
         try { if (socket != null) socket.close(); } catch (IOException ignored) { }
     }

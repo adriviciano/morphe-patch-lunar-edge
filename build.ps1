@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.2.0-beta.3',
+    [string]$Version = '0.2.0-beta.4',
     [switch]$CastPreview
 )
 $ErrorActionPreference = 'Stop'
@@ -42,7 +42,7 @@ if ($CastPreview) {
     [IO.File]::WriteAllText($previewSource, $source, [Text.UTF8Encoding]::new($false))
     $baseSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Where-Object Name -ne 'google-cast-patch.kt' | Select-Object -ExpandProperty FullName)
     $patchSources = @($previewSource) + $baseSources
-    $bundleName = 'Lunar Edge Cast Complete beta 3'
+    $bundleName = 'Lunar Edge Cast Complete beta 4'
 } else {
     $patchSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Select-Object -ExpandProperty FullName)
     $bundleName = 'Lunar Edge local patches'

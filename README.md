@@ -4,7 +4,7 @@ Paquete experimental para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.b
 
 ## Google Cast en pruebas
 
-La versión estable sigue siendo **0.1.2**. La [beta 0.2.0-beta.3](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/tag/v0.2.0-beta.3) ofrece una prueba completa de Google Cast. [Instrucciones desde el móvil](CAST_PREVIEW.md). La fuente local **Lunar Edge Cast Complete beta 3** contiene los cuatro parches seleccionados por defecto y muestra **Google Cast · beta 3**. Se utiliza con el APK/XAPK original: no necesita una entrada previamente corregida. Cast exige la corrección del motor local para evitar la regresión de la beta 1.
+La versión estable sigue siendo **0.1.2**. La [beta 0.2.0-beta.4](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/tag/v0.2.0-beta.4) ofrece una prueba completa de Google Cast. [Instrucciones desde el móvil](CAST_PREVIEW.md). La fuente local **Lunar Edge Cast Complete beta 4** contiene los cuatro parches seleccionados por defecto y muestra **Google Cast · beta 4**. Se utiliza con el APK/XAPK original: no necesita una entrada previamente corregida. Cast exige la corrección del motor local para evitar la regresión de la beta 1.
 
 ## Archivos preparados
 

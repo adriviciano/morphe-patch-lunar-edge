@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
 
 /** Selector y controles de Google Cast integrados en el reproductor existente. */
 public final class CastBridge {
-    private static final String SCREEN_TITLE = "Google Cast · beta 3";
+    private static final String SCREEN_TITLE = "Google Cast · beta 4";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static CastSession current;
     private static Controls controls;
@@ -300,7 +300,12 @@ public final class CastBridge {
         try {
             if (current != null) current.close();
             Controls next = new Controls(activity, media, device.name);
-            CastSession session = new CastSession(media.networkUrl(address(activity, network)), media.title, media.position, next);
+            URI source = new URI(media.url);
+            boolean localHls = ("127.0.0.1".equals(source.getHost()) || "localhost".equalsIgnoreCase(source.getHost())) &&
+                    media.url.toLowerCase(Locale.ROOT).contains(".m3u8");
+            String wifiAddress = address(activity, network);
+            CastSession session = new CastSession(localHls ? media.url : media.networkUrl(wifiAddress), media.title, media.position, next);
+            if (localHls) session.useLocalRelay(wifiAddress, device.host);
             current = session;
             controls = next;
             next.session = session;
@@ -389,7 +394,7 @@ public final class CastBridge {
             message.setTextIsSelectable(true);
             LinearLayout layout = column(activity);
             layout.addView(message);
-            AlertDialog reportDialog = new AlertDialog.Builder(activity).setTitle("Diagnóstico Cast · beta 3")
+            AlertDialog reportDialog = new AlertDialog.Builder(activity).setTitle("Diagnóstico Cast · beta 4")
                     .setView(layout).setNegativeButton("Cerrar", null).setPositiveButton("Copiar informe", null).create();
             reportDialog.setOnShowListener(ignored -> reportDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false));
             reportDialog.show();
@@ -402,13 +407,14 @@ public final class CastBridge {
                     String wifiAddress = address(activity, wifi(activity));
                     String sent = media.networkUrl(wifiAddress);
                     String mime = media.url.toLowerCase(Locale.ROOT).contains(".m3u8") ? "HLS" : "MP4";
-                    report = "Cast beta 3\nFuente: " + (local ? "motor local" : "remota") +
+                    report = "Cast beta 4\nFuente: " + (local ? "motor local" : "remota") +
                             "; formato enviado: " + mime + "; inicio: " + (int) media.position + " s\n" +
                             "Respuesta TV: " + (state.contains("LOAD_FAILED") ? "LOAD_FAILED" : state.contains("no puede reproducir") ? "IDLE ERROR" : "otro estado") + "\n" +
                             CastDiagnostics.probe("Fuente original", media.url);
                     if (local && wifiAddress != null) report += "\n" + CastDiagnostics.probe("Dirección LAN enviada a TV", sent);
-                    report += "\nPruebas HTTP realizadas desde el móvil; no confirman el acceso desde la TV. No se incluyen URL ni tokens.";
-                } catch (Exception error) { report = "Cast beta 3: " + error.getClass().getSimpleName(); }
+                    report += "\n" + session.relayReport();
+                    report += "\nPruebas HTTP original/LAN desde el móvil. El contador del puente corresponde al receptor seleccionado. No se incluyen URL ni tokens.";
+                } catch (Exception error) { report = "Cast beta 4: " + error.getClass().getSimpleName(); }
                 final String result = report;
                 MAIN.post(() -> {
                     if (activity.isFinishing() || activity.isDestroyed() || !reportDialog.isShowing()) return;
