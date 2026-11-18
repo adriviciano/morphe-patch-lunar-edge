@@ -1,6 +1,5 @@
 param(
-    [string]$Version = '0.2.0-beta.4',
-    [switch]$CastPreview
+    [string]$Version = '0.2.0'
 )
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
@@ -17,7 +16,7 @@ if (-not $sdkRoot) { $sdkRoot = Join-Path $env:USERPROFILE 'AppData\Local\Androi
 $androidJar = Join-Path $sdkRoot 'platforms\android-35\android.jar'
 if (-not (Test-Path -LiteralPath $androidJar)) { throw 'Falta Android SDK Platform 35. Configura ANDROID_HOME.' }
 
-$flavor = if ($CastPreview) { 'cast-complete' } else { 'patches' }
+$flavor = 'patches'
 $work = Join-Path $PSScriptRoot "build\$Version-$flavor"
 $classes = Join-Path $work 'classes'
 $castClasses = Join-Path $work 'cast-classes'
@@ -35,18 +34,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Falló la creación de la extensión Cast.' }
 if ($LASTEXITCODE -ne 0) { throw 'Falló la conversión DEX de Cast.' }
 Copy-Item (Join-Path $castDex 'classes.dex') (Join-Path $classes 'extensions\cast.mpe') -Force
 
-if ($CastPreview) {
-    # La prueba completa parte del original e incluye el motor, los anuncios y Cast.
-    $previewSource = Join-Path $work 'google-cast-patch.kt'
-    $source = (Get-Content src\main\kotlin\google-cast-patch.kt -Raw).Replace('default = false', 'default = true')
-    [IO.File]::WriteAllText($previewSource, $source, [Text.UTF8Encoding]::new($false))
-    $baseSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Where-Object Name -ne 'google-cast-patch.kt' | Select-Object -ExpandProperty FullName)
-    $patchSources = @($previewSource) + $baseSources
-    $bundleName = 'Lunar Edge Cast Complete beta 4'
-} else {
-    $patchSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Select-Object -ExpandProperty FullName)
-    $bundleName = 'Lunar Edge local patches'
-}
+$patchSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Select-Object -ExpandProperty FullName)
+$bundleName = 'Lunar Edge local patches'
 & $compiler $patchSources -classpath $morphe -jvm-target 11 '-Xlambdas=class' -d $classes
 if ($LASTEXITCODE -ne 0) { throw 'Falló la compilación Kotlin.' }
 

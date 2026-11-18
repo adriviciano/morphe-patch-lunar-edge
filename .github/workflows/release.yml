@@ -24,10 +24,7 @@ jobs:
       - name: Compile JVM and Android patch bundle
         shell: pwsh
         run: ./build.ps1
-      - name: Compile isolated Cast preview
-        shell: pwsh
-        run: ./build.ps1 -CastPreview
-      - name: Test Cast protocol and preview package
+      - name: Test Cast protocol and main patch package
         shell: pwsh
         run: ./scripts/test-cast.ps1
       - name: Verify Morphe metadata
@@ -56,9 +53,6 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             throw 'La release ya existe. Crea una versión nueva para no reemplazar paquetes publicados.'
           }
-          $preview = "dist/lunar-edge-cast-complete-$version.mpp"
-          $previewHash = (Get-FileHash $preview -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$previewHash  lunar-edge-cast-complete-$version.mpp" | Add-Content dist/SHA256SUMS.txt
           $releaseFlags = if ($version.Contains('-')) { @('--prerelease', '--latest=false') } else { @('--latest') }
-          gh release create $tag $bundle $preview patches-bundle.json patches-list.json dist/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "Lunar Edge patches $version" --notes-file RELEASE_NOTES.md @releaseFlags
+          gh release create $tag $bundle patches-bundle.json patches-list.json dist/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "Lunar Edge patches $version" --notes-file RELEASE_NOTES.md @releaseFlags
           if ($LASTEXITCODE -ne 0) { throw 'No se pudo publicar la release.' }

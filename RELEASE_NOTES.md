@@ -1,7 +1,13 @@
-**Google Cast · beta 4 — puente CORS para HLS local** en Lunar Edge **4.0.2**.
+# Versión estable 0.2.0
 
-El informe de la beta 3 confirmó que el motor entrega HLS sin CORS y que la TV devuelve LOAD_FAILED. Google requiere CORS para streaming adaptativo. Esta beta sirve el HLS local mediante un puente dentro del móvil que añade CORS y reescribe las referencias de listas, segmentos, claves e inicializaciones. Conserva las peticiones de rango y añade contadores de solicitudes de la TV al diagnóstico, sin exponer URL ni tokens.
+Google Cast se incorpora al paquete principal de Morphe y queda activado por defecto junto a la reparación del motor y los dos parches de anuncios.
 
-Descarga **lunar-edge-cast-complete-0.2.0-beta.4.mpp**, añádelo como fuente local y parte del APK/XAPK original con los cuatro parches seleccionados. Mantén la app abierta durante la prueba. Si falla, copia el informe desde **Diagnóstico de carga**.
+La beta 4 resolvió el fallo LOAD_FAILED del HLS local mediante un puente CORS. El usuario confirmó reproducción real en su Grundig Android TV. Esta versión promueve ese mismo comportamiento a estable: descubrimiento, conexión, puente HLS/CORS, controles y alternativa DLNA. Se conserva el diagnóstico copiable sin URL ni tokens.
 
-La reparación obligatoria del motor se conserva. Las pruebas del puente con un origen HLS controlado pasan; sigue pendiente confirmar la fuente real en la TV. La estable sigue siendo **0.1.2**. Instrucciones completas en CAST_PREVIEW.md.
+## Obtenerla
+
+Actualiza la fuente `adriviciano/morphe-patch-lunar-edge` en Morphe, o añádela desde https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge. Selecciona el APK/XAPK original completo de Lunar Edge 4.0.2, con los cuatro parches seleccionados. Si usaste fuentes beta locales, desactívalas para esta instalación. El único paquete principal es `lunar-edge-patches-0.2.0.mpp`.
+
+El móvil y la TV deben compartir Wi-Fi. Mantén Lunar Edge abierta durante la emisión. Otros modelos, fuentes, subtítulos, cambios de episodio y reproducción prolongada con pantalla apagada no se han validado exhaustivamente.
+
+Las pruebas automáticas verifican protocolo Cast, diagnóstico, reescritura HLS, CORS, recursos dependientes y Range. También se verifica el paquete principal con cuatro parches predeterminados y la dependencia obligatoria del motor.

@@ -1,10 +1,10 @@
 {
-  "version": "0.2.0-beta.4",
+  "version": "0.2.0",
   "patches": [
     {
-      "name": "Enable Google Cast (experimental)",
-      "description": "Añade Google Cast beta 4 con puente CORS para HLS local y controles. Exige la corrección del motor. Conserva DLNA. Pendiente de validar reproducción real.",
-      "default": false,
+      "name": "Enable Google Cast",
+      "description": "Añade Google Cast con puente CORS para HLS local y controles. Exige la corrección del motor y conserva DLNA. Reproducción confirmada en Android TV.",
+      "default": true,
       "compatiblePackages": [
         {
           "packageName": "com.lunaredge.browser",

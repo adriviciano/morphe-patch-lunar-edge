@@ -38,8 +38,8 @@ fun main(args: Array<String>) {
     File("patches-list.json").writeText(JSONObject(mapOf("version" to version, "patches" to patches)).toString(2) + "\n")
     val repository = "https://github.com/adriviciano/morphe-patch-lunar-edge"
     val metadata = mapOf(
-        "created_at" to "2026-11-18T11:00:00",
-        "description" to "Google Cast beta 4 para Lunar Edge 4.0.2: puente CORS para HLS del motor local y contadores de acceso de la TV. Cuatro parches con reparación obligatoria del motor. Pendiente prueba de reproducción real.",
+        "created_at" to "2026-11-18T13:35:18",
+        "description" to "Parches para Lunar Edge 4.0.2: reparación del motor local, eliminación de anuncios del reproductor y Google Cast con puente HLS/CORS. Cuatro parches activos por defecto. Reproducción confirmada en Android TV.",
         "download_url" to "$repository/releases/download/v$version/lunar-edge-patches-$version.mpp",
         "signature_download_url" to "",
         "version" to version

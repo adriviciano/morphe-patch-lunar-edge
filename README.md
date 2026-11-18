@@ -1,86 +1,75 @@
-# Lunar Edge: parches locales de Morphe
+# Lunar Edge: parches para Morphe
 
-Paquete experimental para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
+Versión estable **0.2.0** para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
 
-## Google Cast en pruebas
+[**Añadir la fuente a Morphe**](https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge) · [Descargar el paquete estable](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/latest)
 
-La versión estable sigue siendo **0.1.2**. La [beta 0.2.0-beta.4](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/tag/v0.2.0-beta.4) ofrece una prueba completa de Google Cast. [Instrucciones desde el móvil](CAST_PREVIEW.md). La fuente local **Lunar Edge Cast Complete beta 4** contiene los cuatro parches seleccionados por defecto y muestra **Google Cast · beta 4**. Se utiliza con el APK/XAPK original: no necesita una entrada previamente corregida. Cast exige la corrección del motor local para evitar la regresión de la beta 1.
+## Instalar o actualizar
 
-## Archivos preparados
+1. Añade la fuente GitHub `adriviciano/morphe-patch-lunar-edge` en Morphe. Si ya la tenías, actualiza la fuente para obtener **0.2.0**.
+2. Selecciona el APK/XAPK **original completo de Lunar Edge 4.0.2** desde almacenamiento.
+3. Mantén seleccionados los **cuatro parches** y parchea e instala con Morphe.
+4. Abre un vídeo y pulsa emitir para seleccionar una Android TV o Chromecast conectado al mismo Wi-Fi.
 
-- `dist/lunar-edge-patches-0.1.2.mpp`: paquete para Morphe, con clases JVM y `classes.dex` para Android.
-- `dist/lunar-edge-4.0.2-patched.apk`: APK fusionada y firmada con una clave local de pruebas.
-- `dist/patch-result.json`: resultado de la aplicación de los parches.
+Si participaste en las pruebas, desactiva las fuentes locales beta y de diagnóstico. Parte del original, sin Cast aplicado. No hace falta una entrada previamente corregida. Conserva la misma clave de firma de Morphe al actualizar una instalación parcheada.
 
-La APK proporcionada contiene librerías **ARMv7 (armeabi-v7a)**. No incluye ARM64; los teléfonos que solo admiten aplicaciones de 64 bits necesitan otro XAPK de origen.
-
-## Qué modifica
-
-| Parche | Cambio |
-| --- | --- |
-| Fix local video engine | Corrige el rechazo local de la nueva firma en el motor nativo, que provocaba un falso error de red o servidor. ARM64 y ARMv7 con SHA256 exacto. |
-| Remove player video ads | Omite las rutas de anuncios de los reproductores principal y local usando la continuación que ya usa la app cuando no hay anuncio. |
-| Remove player display ads | Impide cargar intersticiales de la posición 16 y anuncios nativos superpuestos del reproductor principal. |
-
-Las modificaciones DEX verifican clase, nombre, parámetros y una llamada del cuerpo original. La corrección nativa verifica el SHA256 completo y la instrucción original antes de cambiar la rama de rechazo por la firma. Si la versión cambia, hay que analizarla de nuevo. No se modifica la suscripción ni se simulan recompensas o respuestas de servidores. Los anuncios de otras pantallas quedan fuera del alcance.
-
-## Uso
-
-[**Añadir esta fuente a Morphe**](https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge)
-
-También puedes añadir manualmente la fuente de GitHub `adriviciano/morphe-patch-lunar-edge` desde Morphe. Selecciona tu APK/XAPK original de Lunar Edge 4.0.2 y activa los tres parches. El paquete `.mpp` está en [Releases](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/latest).
-
-Para fuentes que soliciten directamente la URL de metadatos:
+URL de metadatos para clientes que la soliciten:
 
 ```text
 https://raw.githubusercontent.com/adriviciano/morphe-patch-lunar-edge/main/patches-bundle.json
 ```
 
-También puedes aplicar el paquete con Morphe Desktop:
+## Parches incluidos
 
-```powershell
-java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.1.2.mpp -o dist\lunar-edge-4.0.2-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
-```
+Los cuatro están activados por defecto:
 
-También puedes probar la APK ya generada. Está firmada con una clave diferente a la original: Android no permitirá instalarla encima de la versión de APKPure. Conserva los datos que necesites antes de desinstalar la original. Para futuras actualizaciones locales conserva la misma clave de firma. La clave incluida en `dist` usa la contraseña de pruebas `android`; no se debe publicar.
+| Parche | Función |
+| --- | --- |
+| Fix local video engine | Repara el rechazo de la firma modificada en el motor local, que provocaba un falso error de servidor. Admite las bibliotecas conocidas ARM64 y ARMv7. |
+| Remove player video ads | Omite las rutas de anuncios del reproductor mediante su continuación existente. |
+| Remove player display ads | Omite intersticiales y anuncios superpuestos del reproductor principal. |
+| Enable Google Cast | Añade descubrimiento de Android TV/Chromecast, emisión HLS con puente CORS y controles de reproducción, pausa, posición y volumen. Conserva DLNA como alternativa. |
+
+Cast depende de la reparación del motor, por lo que no se puede omitir accidentalmente. Las modificaciones verifican firmas de métodos y las bibliotecas nativas conocidas antes de aplicarse. Otras versiones o variantes requieren un análisis nuevo. Los anuncios de otras pantallas quedan fuera del alcance.
+
+## Emitir a la TV
+
+El móvil y la TV deben estar en el mismo Wi-Fi. El selector **Google Cast · 0.2.0** busca receptores y permite introducir su IP si falla el descubrimiento. **Otros televisores (DLNA)** abre el selector original.
+
+Para el HLS del motor local, la app mantiene un puente HTTP en el móvil que añade CORS y sirve listas, segmentos, claves e inicializaciones a la TV elegida. Mantén Lunar Edge abierta durante la reproducción. Desde los controles puedes abrir **Diagnóstico de carga** y copiar un informe sin URL ni tokens si aparece un error.
+
+La reproducción de un vídeo real de Lunar Edge se ha confirmado en la Grundig Android TV del usuario con la beta 4; esta estable incorpora ese mismo comportamiento. Las pruebas automáticas verifican protocolo, diagnóstico y puente HLS/CORS. No se ha comprobado cada modelo de TV, fuente, subtítulo, cambio de episodio ni la reproducción prolongada con pantalla apagada.
 
 ## Compilar y verificar
 
-Requiere Java/JDK 21 y PowerShell. Desde la raíz del proyecto:
+Requiere Java/JDK 21, PowerShell y Android SDK Platform 35 (`ANDROID_HOME`).
 
 ```powershell
 .\scripts\setup-tools.ps1
 .\build.ps1
+.\scripts\test-cast.ps1
+.\scripts\generate-metadata.ps1
 ```
 
-Las herramientas se descargan de sus repositorios oficiales con versiones y SHA256 fijados; no hace falta un token de GitHub. La compilación usa la API incluida en Morphe Desktop 2.2.0 y D8 incluido en JADX 1.5.6.
+Genera `dist/lunar-edge-patches-0.2.0.mpp`, con clases JVM, DEX para Morphe en Android y la extensión Cast integrada. Las herramientas se descargan con versiones y SHA256 fijados. Se usa la API incluida en Morphe Desktop 2.2.0 y D8 de JADX 1.5.6.
 
-Después de generar una APK firmada:
+Ejemplo con Morphe Desktop:
 
 ```powershell
-.\scripts\verify.ps1
+java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.2.0.mpp -o dist\lunar-edge-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
+.\scripts\verify.ps1 -ApkPath dist\lunar-edge-patched.apk
 ```
 
-La verificación inspecciona las seis modificaciones DEX, sus registros de llamada, la firma de la APK, la corrección nativa, la ausencia de diagnóstico temporal y las rutas DLNA. Se ha confirmado reproducción real en un móvil ARM64 después de corregir el motor; la prueba original mostraba `enginePort=-1` y la corregida `enginePort=7000`, con respuesta de vídeo válida. ARMv7 se ha verificado estáticamente. Aún quedan por probar las distintas fuentes de vídeo, pausa/reanudación, cambio de episodio y envío a TV.
+La verificación inspecciona los cambios DEX, Cast/DLNA, motor nativo y firma. ARM64 se probó en el móvil; ARMv7 se verificó estáticamente. Usa una entrada completa que incluya la biblioteca nativa para tu arquitectura.
 
-Si usaste los paquetes locales de diagnóstico durante las pruebas, desactiva esas fuentes y vuelve a partir del APK/XAPK original para obtener una instalación sin instrumentación temporal.
+## Publicación
 
-## Envío a TV
+`patches-list.json` y `patches-bundle.json` se generan desde el paquete principal. Las etiquetas ejecutan GitHub Actions: compila, pasa las pruebas, verifica los metadatos y publica el MPP y sus sumas SHA256. Las versiones estables actualizan la release principal; las versiones con sufijo quedan como prerelease.
 
-La APK original ya incluye DLNA/UPnP, búsqueda de receptores y botones de envío en ambas orientaciones del reproductor principal. `transformRules()` y `willWindow()` abren los selectores y envían la URL del vídeo mediante `DeviceControl`. Los parches conservan estas rutas.
-
-La estable 0.1.2 no añade Google Cast. La beta incorpora un emisor Cast V2 con descubrimiento NSD, selector de TV y controles de reproducción, pausa, posición y volumen. Permite introducir una IP local cuando falla el descubrimiento y prioriza IPv4 cuando Android ofrece varias direcciones. Conserva el selector DLNA como alternativa. La reproducción y pausa de un vídeo de prueba se han confirmado en una Android TV; sigue pendiente validar las fuentes reales de Lunar Edge dentro de la app y el funcionamiento con pantalla apagada. No utiliza código ni bibliotecas de PyChromecast dentro de la APK.
+No se publican APK, XAPK, herramientas ni claves de firma. El repositorio contiene los parches; cada usuario aporta su APK original. Este proyecto no está afiliado a Morphe ni a Lunar Edge. La extensión no incluye código ni bibliotecas de PyChromecast.
 
 ## Referencias
 
 - [Morphe Patcher](https://github.com/MorpheApp/morphe-patcher)
 - [Plantilla oficial](https://github.com/MorpheApp/morphe-patches-template)
 - [Morphe Desktop](https://github.com/MorpheApp/morphe-desktop)
-
-No se redistribuyen las herramientas ni el XAPK en el repositorio. Este proyecto no está afiliado a Morphe ni a Lunar Edge.
-
-## Publicación
-
-La compilación de la beta requiere además Android SDK Platform 35 (`ANDROID_HOME`). `build.ps1 -CastPreview` genera el paquete completo de prueba con los cuatro parches activos; `scripts/test-cast.ps1` verifica el protocolo, los cuatro parches predeterminados y la dependencia de Cast respecto al motor. Los directorios de compilación están separados por versión y modalidad.
-
-Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete completo. Las etiquetas ejecutan GitHub Actions, que publica los paquetes, metadatos y SHA256 en Releases. Las versiones con sufijo se publican como prerelease y no sustituyen la estable. No se suben APK, XAPK ni claves locales de firma.
