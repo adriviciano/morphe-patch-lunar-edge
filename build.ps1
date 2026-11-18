@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.2.0-beta.1',
+    [string]$Version = '0.2.0-beta.2',
     [switch]$CastPreview
 )
 $ErrorActionPreference = 'Stop'
@@ -17,7 +17,7 @@ if (-not $sdkRoot) { $sdkRoot = Join-Path $env:USERPROFILE 'AppData\Local\Androi
 $androidJar = Join-Path $sdkRoot 'platforms\android-35\android.jar'
 if (-not (Test-Path -LiteralPath $androidJar)) { throw 'Falta Android SDK Platform 35. Configura ANDROID_HOME.' }
 
-$flavor = if ($CastPreview) { 'cast-preview' } else { 'patches' }
+$flavor = if ($CastPreview) { 'cast-complete' } else { 'patches' }
 $work = Join-Path $PSScriptRoot "build\$Version-$flavor"
 $classes = Join-Path $work 'classes'
 $castClasses = Join-Path $work 'cast-classes'
@@ -36,12 +36,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Falló la conversión DEX de Cast.' }
 Copy-Item (Join-Path $castDex 'classes.dex') (Join-Path $classes 'extensions\cast.mpe') -Force
 
 if ($CastPreview) {
-    # Un único parche predeterminado permite identificar inequívocamente la prueba instalada.
+    # La prueba completa parte del original e incluye el motor, los anuncios y Cast.
     $previewSource = Join-Path $work 'google-cast-patch.kt'
     $source = (Get-Content src\main\kotlin\google-cast-patch.kt -Raw).Replace('default = false', 'default = true')
     [IO.File]::WriteAllText($previewSource, $source, [Text.UTF8Encoding]::new($false))
-    $patchSources = @($previewSource)
-    $bundleName = 'Lunar Edge Cast Preview beta 1'
+    $baseSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Where-Object Name -ne 'google-cast-patch.kt' | Select-Object -ExpandProperty FullName)
+    $patchSources = @($previewSource) + $baseSources
+    $bundleName = 'Lunar Edge Cast Complete beta 2'
 } else {
     $patchSources = @(Get-ChildItem src\main\kotlin -Filter '*.kt' | Select-Object -ExpandProperty FullName)
     $bundleName = 'Lunar Edge local patches'

@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
     val repository = "https://github.com/adriviciano/morphe-patch-lunar-edge"
     val metadata = mapOf(
         "created_at" to "2026-11-18T11:00:00",
-        "description" to "Prueba de Google Cast beta 1 para Lunar Edge 4.0.2. Incluye corrección del motor local y parches de anuncios. Cast es opcional y requiere validación manual en la app; reproducción y pausa de vídeo de prueba confirmadas en una Android TV.",
+        "description" to "Prueba Google Cast beta 2 para Lunar Edge 4.0.2. Cast exige la corrección del motor local. El paquete completo activa los cuatro parches para partir del original. Pendiente de validación manual de las fuentes reales dentro de la app.",
         "download_url" to "$repository/releases/download/v$version/lunar-edge-patches-$version.mpp",
         "signature_download_url" to "",
         "version" to version

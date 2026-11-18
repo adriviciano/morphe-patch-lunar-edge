@@ -1,21 +1,22 @@
-Prueba **Google Cast · beta 1** para Lunar Edge **4.0.2 (40002)**. La estable **0.1.2** se mantiene sin cambios.
+**Google Cast · beta 2 completa** para Lunar Edge **4.0.2 (40002)**. La estable **0.1.2** se mantiene sin cambios.
+
+## Corrección de esta beta
+
+El paquete Cast de la beta 1 contenía un solo parche y necesitaba una APK que ya tuviese el motor corregido. La beta 2 completa incorpora **los cuatro parches, activados por defecto**, y Cast depende obligatoriamente de **Fix local video engine**. Evita que aplicar solamente Cast al original vuelva a dejar el motor sin corregir.
+
+La corrección del motor acepta también exactamente las bibliotecas que ya había corregido, comprobando el SHA256 del original reconstruido. Las variantes desconocidas se siguen rechazando.
 
 ## Prueba desde el móvil
 
-Descarga **lunar-edge-cast-preview-0.2.0-beta.1.mpp** y añádelo como fuente local en Morphe. Su nombre es **Lunar Edge Cast Preview beta 1** y contiene **un único parche seleccionado por defecto**.
-
-Para continuar la prueba anterior, usa `lunar-edge-cast-input.apk` de Descargas y únicamente esta fuente local. El resumen debe indicar **Enable Google Cast (experimental)** con **1 parche**. Instala el resultado y abre el botón de emitir dentro de un vídeo.
-
-El selector debe mostrar exactamente **Google Cast · beta 1**. Si aparece el antiguo, la instalación no está entrando en el código de esta prueba. Si muestra el nuevo pero no encuentra la TV, prueba **Introducir IP**, usando la dirección de los ajustes de red de la TV.
+1. Descarga **lunar-edge-cast-complete-0.2.0-beta.2.mpp** y añádelo como fuente local en Morphe: **Lunar Edge Cast Complete beta 2**.
+2. Selecciona el **APK/XAPK original de Lunar Edge 4.0.2** y utiliza solo esa fuente. El resumen debe mostrar **4 parches seleccionados**.
+3. Instala y comprueba primero que el vídeo carga en el móvil. Después pulsa emitir: el título debe ser **Google Cast · beta 2**.
+4. Si la TV no aparece, prueba **Introducir IP** usando la dirección de sus ajustes de red.
 
 [Instrucciones completas](https://github.com/adriviciano/morphe-patch-lunar-edge/blob/codex/google-cast/CAST_PREVIEW.md).
 
-## Alcance y validación
+## Validación y límites
 
-- Descubrimiento Cast de Android TV/Chromecast, conexión al Default Media Receiver y controles de reproducción, pausa, posición y volumen.
-- Selector DLNA original conservado como alternativa.
-- Reproducción y pausa de un MP4 generado localmente confirmadas en una Grundig Android TV desde el móvil.
-- Sobre protobuf contrastado con un decodificador independiente; paquete de un único parche y cambio de ambos botones verificados.
-- **Pendiente:** integración de la búsqueda en la app, fuentes reales de Lunar Edge, reproducción prolongada con pantalla apagada, subtítulos y cambio de episodio.
+Comprobadas aplicación de los cuatro parches desde el XAPK original ARMv7, aplicación desde una entrada ARM64 ya corregida, instrucciones nativas, dos botones Cast, alternativas DLNA, firma válida y ausencia de diagnóstico temporal. Pruebas del protocolo y de dependencia obligatoria del motor superadas.
 
-El paquete completo contiene también los tres parches estables, para partir del APK/XAPK original. El paquete `cast-preview` contiene solo Cast, para partir de la entrada de prueba que ya tiene el motor y los anuncios corregidos. No se incluyen APK ni claves.
+Reproducción y pausa de un vídeo local de prueba confirmadas previamente en una Grundig Android TV. **Todavía pendiente:** la integración completa con las fuentes reales de Lunar Edge y la reproducción prolongada con pantalla apagada. No se incluyen APK ni claves de firma.

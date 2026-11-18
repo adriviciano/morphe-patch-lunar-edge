@@ -57,9 +57,16 @@ val fixLocalVideoEngine = patch(
             val target = nativeEngineTargets[path] ?: error("Arquitectura del motor no admitida: $path")
             val file = resourceFile(path)
             val bytes = file.readBytes()
-            val hash = java.security.MessageDigest.getInstance("SHA-256")
-                .digest(bytes).joinToString("") { "%02x".format(it) }
-            check(hash == target.sha256) { "Biblioteca incompatible o ya modificada: $path. Usa el APK/XAPK original." }
+            fun hashOf(value: ByteArray) = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(value).joinToString("") { "%02x".format(it) }
+            // También aceptamos exactamente la biblioteca que ya corregimos, sin alterar otra variante.
+            if (bytes.copyOfRange(target.offset, target.offset + target.replacement.size).contentEquals(target.replacement)) {
+                val original = bytes.copyOf()
+                target.expected.copyInto(original, target.offset)
+                check(hashOf(original) == target.sha256) { "Biblioteca incompatible: $path. Usa el APK/XAPK original." }
+                return@map file to bytes
+            }
+            check(hashOf(bytes) == target.sha256) { "Biblioteca incompatible: $path. Usa el APK/XAPK original." }
             check(bytes.copyOfRange(target.offset, target.offset + target.expected.size).contentEquals(target.expected)) {
                 "La comprobación local ha cambiado: $path"
             }

@@ -14,10 +14,12 @@ private const val CAST_PLAYER = "Lchuangyuan/ycj/videolibrary/video/ExoUserPlaye
 @Suppress("unused")
 val enableGoogleCast = patch(
     name = "Enable Google Cast (experimental)",
-    description = "Añade un selector Google Cast beta 1, emisión a Android TV/Chromecast y controles. Mantiene DLNA como alternativa. Pendiente de validar la fuente real de Lunar Edge.",
+    description = "Añade el selector Google Cast beta 2 y controles. Incluye obligatoriamente la corrección del motor local. Mantiene DLNA como alternativa. Pendiente de validar la fuente real de Lunar Edge.",
     default = false
 ) {
     compatibleWith(Compatibility(packageName = "com.lunaredge.browser", name = "Lunar Edge", targets = listOf(AppTarget("4.0.2", 40002))))
+    // Cast nunca debe generar una APK que vuelva a rechazar su nueva firma.
+    dependsOn(fixLocalVideoEngine)
     extendWith("extensions/cast.mpe")
     execute {
         val playerClass = mutableClassDefBy("${CAST_ROOT}ui/JYAlternativeZero;")

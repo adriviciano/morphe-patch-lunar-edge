@@ -4,7 +4,7 @@ Paquete experimental para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.b
 
 ## Google Cast en pruebas
 
-La versión estable sigue siendo **0.1.2**. La [beta 0.2.0-beta.1](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/tag/v0.2.0-beta.1) añade una prueba separada de Google Cast. [Instrucciones desde el móvil](CAST_PREVIEW.md). La fuente local **Lunar Edge Cast Preview beta 1** contiene únicamente el parche Cast seleccionado por defecto y muestra el título **Google Cast · beta 1**.
+La versión estable sigue siendo **0.1.2**. La [beta 0.2.0-beta.2](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/tag/v0.2.0-beta.2) ofrece una prueba completa de Google Cast. [Instrucciones desde el móvil](CAST_PREVIEW.md). La fuente local **Lunar Edge Cast Complete beta 2** contiene los cuatro parches seleccionados por defecto y muestra **Google Cast · beta 2**. Se utiliza con el APK/XAPK original: no necesita una entrada previamente corregida. Cast exige la corrección del motor local para evitar la regresión de la beta 1.
 
 ## Archivos preparados
 
@@ -81,6 +81,6 @@ No se redistribuyen las herramientas ni el XAPK en el repositorio. Este proyecto
 
 ## Publicación
 
-La compilación de la beta requiere además Android SDK Platform 35 (`ANDROID_HOME`). `build.ps1 -CastPreview` genera el paquete de prueba de un único parche; `scripts/test-cast.ps1` verifica el protocolo y que el parche esté seleccionado por defecto. Los directorios de compilación están separados por versión y modalidad.
+La compilación de la beta requiere además Android SDK Platform 35 (`ANDROID_HOME`). `build.ps1 -CastPreview` genera el paquete completo de prueba con los cuatro parches activos; `scripts/test-cast.ps1` verifica el protocolo, los cuatro parches predeterminados y la dependencia de Cast respecto al motor. Los directorios de compilación están separados por versión y modalidad.
 
 Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete completo. Las etiquetas ejecutan GitHub Actions, que publica los paquetes, metadatos y SHA256 en Releases. Las versiones con sufijo se publican como prerelease y no sustituyen la estable. No se suben APK, XAPK ni claves locales de firma.

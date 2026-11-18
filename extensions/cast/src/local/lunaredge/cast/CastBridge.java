@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
 
 /** Selector y controles de Google Cast integrados en el reproductor existente. */
 public final class CastBridge {
-    private static final String SCREEN_TITLE = "Google Cast · beta 1";
+    private static final String SCREEN_TITLE = "Google Cast · beta 2";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static CastSession current;
     private static Controls controls;
