@@ -1,8 +1,7 @@
 {
   "created_at": "2026-11-18T07:55:23",
   "description": "Parches experimentales para los anuncios del reproductor de Lunar Edge 4.0.2 (40002). Pendiente de prueba en un dispositivo Android. No añade Google Cast.",
-  "download_url": "https://github.com/adriviciano/morphe-patch-lunar-edge/releases/download/v0.1.0/lunar-edge-patches-0.1.0.mpp",
+  "download_url": "https://github.com/adriviciano/morphe-patch-lunar-edge/releases/download/v0.1.1/lunar-edge-patches-0.1.1.mpp",
   "signature_download_url": "",
-  "version": "0.1.0",
-  "public_key": ""
+  "version": "0.1.1"
 }

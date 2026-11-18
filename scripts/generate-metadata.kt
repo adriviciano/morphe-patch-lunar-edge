@@ -42,8 +42,7 @@ fun main(args: Array<String>) {
         "description" to "Parches experimentales para los anuncios del reproductor de Lunar Edge 4.0.2 (40002). Pendiente de prueba en un dispositivo Android. No añade Google Cast.",
         "download_url" to "$repository/releases/download/v$version/lunar-edge-patches-$version.mpp",
         "signature_download_url" to "",
-        "version" to version,
-        "public_key" to ""
+        "version" to version
     )
     File("patches-bundle.json").writeText(JSONObject(metadata).toString(2) + "\n")
     println("Metadatos de Morphe generados desde ${patches.size} parches, versión $version.")

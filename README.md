@@ -4,7 +4,7 @@ Paquete experimental para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.b
 
 ## Archivos preparados
 
-- `dist/lunar-edge-patches-0.1.0.mpp`: paquete para Morphe, con clases JVM y `classes.dex` para Android.
+- `dist/lunar-edge-patches-0.1.1.mpp`: paquete para Morphe, con clases JVM y `classes.dex` para Android.
 - `dist/lunar-edge-4.0.2-patched.apk`: APK fusionada y firmada con una clave local de pruebas.
 - `dist/patch-result.json`: resultado de la aplicación de los parches.
 
@@ -34,7 +34,7 @@ https://raw.githubusercontent.com/adriviciano/morphe-patch-lunar-edge/main/patch
 También puedes aplicar el paquete con Morphe Desktop:
 
 ```powershell
-java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.1.0.mpp -o dist\lunar-edge-4.0.2-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
+java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.1.1.mpp -o dist\lunar-edge-4.0.2-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
 ```
 
 También puedes probar la APK ya generada. Está firmada con una clave diferente a la original: Android no permitirá instalarla encima de la versión de APKPure. Conserva los datos que necesites antes de desinstalar la original. Para futuras actualizaciones locales conserva la misma clave de firma. La clave incluida en `dist` usa la contraseña de pruebas `android`; no se debe publicar.
@@ -74,4 +74,4 @@ No se redistribuyen las herramientas ni el XAPK en el repositorio. Este proyecto
 
 ## Publicación
 
-Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete. La etiqueta `v0.1.0` ejecuta GitHub Actions, vuelve a compilar y publica el `.mpp`, los metadatos y su SHA256 en Releases. No se suben APK, XAPK ni claves locales de firma.
+Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete. La etiqueta `v0.1.1` ejecuta GitHub Actions, vuelve a compilar y publica el `.mpp`, los metadatos y su SHA256 en Releases. No se suben APK, XAPK ni claves locales de firma.

@@ -17,7 +17,7 @@ $manifest = @"
 Manifest-Version: 1.0
 Name: Lunar Edge local patches
 Description: Parches locales para los anuncios del reproductor
-Version: 0.1.0
+Version: 0.1.1
 Author: Lunar Edge local patches
 Source: https://github.com/adriviciano/morphe-patch-lunar-edge
 Website: https://github.com/adriviciano/morphe-patch-lunar-edge
@@ -25,13 +25,13 @@ License: GPL-3.0-only
 
 "@
 [IO.File]::WriteAllText((Join-Path $PSScriptRoot 'build\MANIFEST.MF'), $manifest, [Text.UTF8Encoding]::new($false))
-& jar --create --file 'dist\lunar-edge-patches-0.1.0.mpp' --manifest 'build\MANIFEST.MF' -C 'build\classes' .
+& jar --create --file 'dist\lunar-edge-patches-0.1.1.mpp' --manifest 'build\MANIFEST.MF' -C 'build\classes' .
 if ($LASTEXITCODE -ne 0) { throw 'Falló la creación del paquete.' }
 
 # Se incluye DEX para Morphe Manager y clases JVM para Morphe Desktop.
-Copy-Item -LiteralPath 'dist\lunar-edge-patches-0.1.0.mpp' -Destination 'build\patches.jar' -Force
+Copy-Item -LiteralPath 'dist\lunar-edge-patches-0.1.1.mpp' -Destination 'build\patches.jar' -Force
 & java -cp $jadx com.android.tools.r8.D8 --release --min-api 26 --classpath $morphe --output 'build\dex' 'build\patches.jar'
 if ($LASTEXITCODE -ne 0) { throw 'Falló la conversión DEX.' }
-& jar --update --file 'dist\lunar-edge-patches-0.1.0.mpp' -C 'build\dex' classes.dex
+& jar --update --file 'dist\lunar-edge-patches-0.1.1.mpp' -C 'build\dex' classes.dex
 if ($LASTEXITCODE -ne 0) { throw 'Falló la inclusión de classes.dex.' }
-Write-Host 'Creado dist\lunar-edge-patches-0.1.0.mpp'
+Write-Host 'Creado dist\lunar-edge-patches-0.1.1.mpp'

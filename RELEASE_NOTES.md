@@ -1,5 +1,7 @@
 Parches experimentales para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
 
+Versión 0.1.1: corrige los metadatos de importación de la fuente para paquetes sin firma de publicación.
+
 - **Remove player video ads:** omite los anuncios de vídeo del reproductor principal y local conservando la ruta de continuación sin anuncio.
 - **Remove player display ads:** evita cargar los intersticiales y anuncios nativos superpuestos del reproductor principal.
 
