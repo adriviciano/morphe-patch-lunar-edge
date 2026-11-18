@@ -1,6 +1,31 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "patches": [
+    {
+      "name": "Fix local video engine",
+      "description": "Permite arrancar el motor local de vídeo después de firmar la APK con Morphe. Corrige el falso error de red o servidor en Lunar Edge 4.0.2 (ARM64/ARMv7).",
+      "default": true,
+      "compatiblePackages": [
+        {
+          "packageName": "com.lunaredge.browser",
+          "name": "Lunar Edge",
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "4.0.2",
+              "versionCodes": {
+                "ARM64_V8A": 40002,
+                "ARMEABI_V7A": 40002,
+                "X86_64": 40002,
+                "X86": 40002
+              },
+              "isExperimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
     {
       "name": "Remove player display ads",
       "description": "Evita cargar los intersticiales y anuncios nativos superpuestos del reproductor de Lunar Edge 4.0.2.",

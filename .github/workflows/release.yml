@@ -30,7 +30,7 @@ jobs:
           ./scripts/generate-metadata.ps1
           git diff --exit-code -- patches-list.json patches-bundle.json
           if ($LASTEXITCODE -ne 0) { throw 'Los metadatos publicados no coinciden con el paquete.' }
-          java -jar tools/morphe-desktop.jar list-patches --patches dist/lunar-edge-patches-0.1.1.mpp -p -v
+          java -jar tools/morphe-desktop.jar list-patches --patches dist/lunar-edge-patches-0.1.2.mpp -p -v
           if ($LASTEXITCODE -ne 0) { throw 'Morphe no puede cargar los parches.' }
       - name: Publish release
         shell: pwsh

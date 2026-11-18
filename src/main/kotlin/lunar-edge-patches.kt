@@ -3,8 +3,10 @@ package local.lunaredge.patches
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
+import app.morphe.patcher.patch.listApkEntries
 import app.morphe.patcher.patch.mutableClassDefBy
 import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.resourceFile
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -17,6 +19,57 @@ private val playbackParameters = listOf(
     "Z", "Z", "Landroid/app/Activity;", VIDEO_VIEW, "I", "I",
     "Landroid/view/View;", "Landroid/os/Handler;", PLAYER
 )
+
+private data class NativeEngineTarget(
+    val sha256: String,
+    val offset: Int,
+    val expected: ByteArray,
+    val replacement: ByteArray
+)
+
+private val nativeEngineTargets = mapOf(
+    "lib/arm64-v8a/libpp_hls.so" to NativeEngineTarget(
+        "4f46f78b983e4ec57a1ec1777060cd56116b3cfbd3cfa75dddbabbecf6b8f8f6",
+        0x15fcc8,
+        byteArrayOf(0x40, 0x07, 0x00, 0x35),
+        byteArrayOf(0x1f, 0x20, 0x03, 0xd5.toByte())
+    ),
+    "lib/armeabi-v7a/libpp_hls.so" to NativeEngineTarget(
+        "06e9366490502764c3b7d97da74b2720195d139b27c04d86b7e7971f7b87c30c",
+        0xd82e4,
+        byteArrayOf(0x4f, 0xd1.toByte()),
+        byteArrayOf(0x00, 0xbf.toByte())
+    )
+)
+
+@Suppress("unused")
+val fixLocalVideoEngine = patch(
+    name = "Fix local video engine",
+    description = "Permite arrancar el motor local de vídeo después de firmar la APK con Morphe. Corrige el falso error de red o servidor en Lunar Edge 4.0.2 (ARM64/ARMv7).",
+    default = true
+) {
+    compatibleWith(Compatibility(packageName = "com.lunaredge.browser", name = "Lunar Edge", targets = listOf(AppTarget("4.0.2", 40002))))
+    execute {
+        val libraries = listApkEntries("lib/").filter { it.endsWith("/libpp_hls.so") }
+        check(libraries.isNotEmpty()) { "No se encuentra el motor local: selecciona el APK/XAPK original completo." }
+        // Validamos cada biblioteca completa antes de realizar cualquier cambio.
+        val edits = libraries.map { path ->
+            val target = nativeEngineTargets[path] ?: error("Arquitectura del motor no admitida: $path")
+            val file = resourceFile(path)
+            val bytes = file.readBytes()
+            val hash = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(bytes).joinToString("") { "%02x".format(it) }
+            check(hash == target.sha256) { "Biblioteca incompatible o ya modificada: $path. Usa el APK/XAPK original." }
+            check(bytes.copyOfRange(target.offset, target.offset + target.expected.size).contentEquals(target.expected)) {
+                "La comprobación local ha cambiado: $path"
+            }
+            target.replacement.copyInto(bytes, target.offset)
+            file to bytes
+        }
+        // Solo se omite el rechazo de la firma nueva en sim_check_sig; las peticiones remotas no cambian.
+        edits.forEach { (file, bytes) -> file.writeBytes(bytes) }
+    }
+}
 
 private fun requireMethod(
     owner: String,

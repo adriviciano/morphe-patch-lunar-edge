@@ -4,7 +4,7 @@ Paquete experimental para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.b
 
 ## Archivos preparados
 
-- `dist/lunar-edge-patches-0.1.1.mpp`: paquete para Morphe, con clases JVM y `classes.dex` para Android.
+- `dist/lunar-edge-patches-0.1.2.mpp`: paquete para Morphe, con clases JVM y `classes.dex` para Android.
 - `dist/lunar-edge-4.0.2-patched.apk`: APK fusionada y firmada con una clave local de pruebas.
 - `dist/patch-result.json`: resultado de la aplicación de los parches.
 
@@ -14,16 +14,17 @@ La APK proporcionada contiene librerías **ARMv7 (armeabi-v7a)**. No incluye ARM
 
 | Parche | Cambio |
 | --- | --- |
+| Fix local video engine | Corrige el rechazo local de la nueva firma en el motor nativo, que provocaba un falso error de red o servidor. ARM64 y ARMv7 con SHA256 exacto. |
 | Remove player video ads | Omite las rutas de anuncios de los reproductores principal y local usando la continuación que ya usa la app cuando no hay anuncio. |
 | Remove player display ads | Impide cargar intersticiales de la posición 16 y anuncios nativos superpuestos del reproductor principal. |
 
-Cada modificación verifica clase, nombre, parámetros y una llamada del cuerpo original antes de aplicarse. Si la versión cambia, hay que analizarla de nuevo. No se modifica la suscripción ni se simulan recompensas o respuestas de servidores. Los anuncios de otras pantallas quedan fuera del alcance.
+Las modificaciones DEX verifican clase, nombre, parámetros y una llamada del cuerpo original. La corrección nativa verifica el SHA256 completo y la instrucción original antes de cambiar la rama de rechazo por la firma. Si la versión cambia, hay que analizarla de nuevo. No se modifica la suscripción ni se simulan recompensas o respuestas de servidores. Los anuncios de otras pantallas quedan fuera del alcance.
 
 ## Uso
 
 [**Añadir esta fuente a Morphe**](https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge)
 
-También puedes añadir manualmente la fuente de GitHub `adriviciano/morphe-patch-lunar-edge` desde Morphe. Selecciona tu APK/XAPK original de Lunar Edge 4.0.2 y activa los dos parches. El paquete `.mpp` está en [Releases](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/latest).
+También puedes añadir manualmente la fuente de GitHub `adriviciano/morphe-patch-lunar-edge` desde Morphe. Selecciona tu APK/XAPK original de Lunar Edge 4.0.2 y activa los tres parches. El paquete `.mpp` está en [Releases](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/latest).
 
 Para fuentes que soliciten directamente la URL de metadatos:
 
@@ -34,7 +35,7 @@ https://raw.githubusercontent.com/adriviciano/morphe-patch-lunar-edge/main/patch
 También puedes aplicar el paquete con Morphe Desktop:
 
 ```powershell
-java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.1.1.mpp -o dist\lunar-edge-4.0.2-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
+java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.1.2.mpp -o dist\lunar-edge-4.0.2-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
 ```
 
 También puedes probar la APK ya generada. Está firmada con una clave diferente a la original: Android no permitirá instalarla encima de la versión de APKPure. Conserva los datos que necesites antes de desinstalar la original. Para futuras actualizaciones locales conserva la misma clave de firma. La clave incluida en `dist` usa la contraseña de pruebas `android`; no se debe publicar.
@@ -56,7 +57,9 @@ Después de generar una APK firmada:
 .\scripts\verify.ps1
 ```
 
-La verificación inspecciona las seis modificaciones DEX, sus registros de llamada, la firma de la APK, las librerías nativas y la presencia de las rutas DLNA. **No sustituye una prueba en Android.** Aún hay que comprobar abrir un vídeo, pausa/reanudación, cambio de episodio y anuncios durante reproducción en un teléfono.
+La verificación inspecciona las seis modificaciones DEX, sus registros de llamada, la firma de la APK, la corrección nativa, la ausencia de diagnóstico temporal y las rutas DLNA. Se ha confirmado reproducción real en un móvil ARM64 después de corregir el motor; la prueba original mostraba `enginePort=-1` y la corregida `enginePort=7000`, con respuesta de vídeo válida. ARMv7 se ha verificado estáticamente. Aún quedan por probar las distintas fuentes de vídeo, pausa/reanudación, cambio de episodio y envío a TV.
+
+Si usaste los paquetes locales de diagnóstico durante las pruebas, desactiva esas fuentes y vuelve a partir del APK/XAPK original para obtener una instalación sin instrumentación temporal.
 
 ## Envío a TV
 
@@ -74,4 +77,4 @@ No se redistribuyen las herramientas ni el XAPK en el repositorio. Este proyecto
 
 ## Publicación
 
-Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete. La etiqueta `v0.1.1` ejecuta GitHub Actions, vuelve a compilar y publica el `.mpp`, los metadatos y su SHA256 en Releases. No se suben APK, XAPK ni claves locales de firma.
+Después de compilar, `scripts/generate-metadata.ps1` genera `patches-list.json` y `patches-bundle.json` desde el paquete. La etiqueta `v0.1.2` ejecuta GitHub Actions, vuelve a compilar y publica el `.mpp`, los metadatos y su SHA256 en Releases. No se suben APK, XAPK ni claves locales de firma.

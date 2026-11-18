@@ -38,11 +38,27 @@ fun main(args: Array<String>) {
     check(classes.containsKey("Lcom/android/cast/dlna/dmc/DLNACastManager;"))
     check(method("${root}ui/JYAlternativeZero;", "transformRules").implementation != null)
     check(method("${root}ui/JYAlternativeZero;", "willWindow").implementation != null)
+    check(classes.keys.none { it.startsWith("Llocal/lunaredge/diagnostic/") }) {
+        "La APK contiene instrumentación temporal. Parte de un original limpio."
+    }
     ZipFile(apk).use { zip ->
-        check(zip.entries().asSequence().any { it.name.startsWith("lib/armeabi-v7a/") })
+        val expectedInstructions = mapOf(
+            "lib/arm64-v8a/libpp_hls.so" to (0x15fcc8 to byteArrayOf(0x1f, 0x20, 0x03, 0xd5.toByte())),
+            "lib/armeabi-v7a/libpp_hls.so" to (0xd82e4 to byteArrayOf(0x00, 0xbf.toByte()))
+        )
+        val engines = zip.entries().asSequence().filter { it.name.endsWith("/libpp_hls.so") }.toList()
+        check(engines.isNotEmpty())
+        engines.forEach { entry ->
+            val (offset, expected) = expectedInstructions.getValue(entry.name)
+            val bytes = zip.getInputStream(entry).use { it.readBytes() }
+            check(bytes.copyOfRange(offset, offset + expected.size).contentEquals(expected)) {
+                "No está aplicada la corrección del motor: ${entry.name}"
+            }
+            println("OK: motor local ${entry.name}")
+        }
     }
     val signature = ApkVerifier.Builder(apk).build().verify()
     check(signature.isVerified) { "Firma inválida: ${signature.errors}" }
-    println("OK: firma APK, librerías ARMv7 y rutas DLNA conservadas.")
-    println("Pendiente: reproducción y descubrimiento de TV en dispositivos reales.")
+    println("OK: firma APK, motor local, ausencia de diagnóstico y rutas DLNA conservadas.")
+    println("Reproducción confirmada en ARM64; pendiente prueba real ARMv7 y descubrimiento de TV.")
 }
