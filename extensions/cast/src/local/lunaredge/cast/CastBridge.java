@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
 
 /** Selector y controles de Google Cast integrados en el reproductor existente. */
 public final class CastBridge {
-    private static final String SCREEN_TITLE = "Google Cast · 0.2.1 beta 1";
+    private static final String SCREEN_TITLE = "Google Cast · 0.2.1";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static CastSession current;
     private static Controls controls;
@@ -394,7 +394,7 @@ public final class CastBridge {
             message.setTextIsSelectable(true);
             LinearLayout layout = column(activity);
             layout.addView(message);
-            AlertDialog reportDialog = new AlertDialog.Builder(activity).setTitle("Diagnóstico Cast · 0.2.1 beta 1")
+            AlertDialog reportDialog = new AlertDialog.Builder(activity).setTitle("Diagnóstico Cast · 0.2.1")
                     .setView(layout).setNegativeButton("Cerrar", null).setPositiveButton("Copiar informe", null).create();
             reportDialog.setOnShowListener(ignored -> reportDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false));
             reportDialog.show();
@@ -407,14 +407,14 @@ public final class CastBridge {
                     String wifiAddress = address(activity, wifi(activity));
                     String sent = media.networkUrl(wifiAddress);
                     String mime = media.url.toLowerCase(Locale.ROOT).contains(".m3u8") ? "HLS" : "MP4";
-                    report = "Cast 0.2.1 beta 1\nFuente: " + (local ? "motor local" : "remota") +
+                    report = "Cast 0.2.1\nFuente: " + (local ? "motor local" : "remota") +
                             "; formato enviado: " + mime + "; inicio: " + (int) media.position + " s\n" +
                             "Respuesta TV: " + (state.contains("LOAD_FAILED") ? "LOAD_FAILED" : state.contains("no puede reproducir") ? "IDLE ERROR" : "otro estado") + "\n" +
                             CastDiagnostics.probe("Fuente original", media.url);
                     if (local && wifiAddress != null) report += "\n" + CastDiagnostics.probe("Dirección LAN enviada a TV", sent);
                     report += "\n" + session.relayReport();
                     report += "\nPruebas HTTP original/LAN desde el móvil. El contador del puente corresponde al receptor seleccionado. No se incluyen URL ni tokens.";
-                } catch (Exception error) { report = "Cast 0.2.1 beta 1: " + error.getClass().getSimpleName(); }
+                } catch (Exception error) { report = "Cast 0.2.1: " + error.getClass().getSimpleName(); }
                 final String result = report;
                 MAIN.post(() -> {
                     if (activity.isFinishing() || activity.isDestroyed() || !reportDialog.isShowing()) return;

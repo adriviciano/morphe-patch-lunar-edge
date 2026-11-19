@@ -1,11 +1,11 @@
-# Prueba de corte Cast: 0.2.1-beta.1
+# Versión estable 0.2.1
 
-Corrige el traspaso al receptor: pausa el reproductor local en lugar de liberarlo. En la APK 4.0.2, O llama a R y destruye el reproductor; L pausa sin destruirlo. El parche verifica la función original antes de aplicarse.
+- Repara la detección DLNA: declara el servicio `DLNACastService` que utiliza la lista de televisores y faltaba en el manifiesto original. La LG 43UK6300PLB con webOS responde y aparece tras la corrección.
+- Pausa el reproductor local durante el traspaso a Google Cast, en lugar de liberarlo. La semántica del método se verifica al parchear.
+- Amplía el diagnóstico con estado y cierre de la sesión, errores de lectura/escritura y conexiones que no completan una petición. El contador anterior no permitía atribuir los fallos a microcortes.
 
-Añade diagnóstico de estado de sesión y motivo de cierre, y distingue errores al leer del motor, escribir a la TV y conexiones sin petición completa. No modifica timeouts, heartbeat ni el comportamiento del puente HLS. El contador antiguo de fallos no bastaba para atribuir las interrupciones a la red.
+Validación: actualización instalada con la firma de Morphe, usuario confirma vídeo en la LG y consultas AVTransport muestran reproducción y avance continuo durante más de dos minutos. Prueba de streaming del puente: 42 segundos, 15 listas y 15 fragmentos nuevos. Verificación de APK ARM64 y servicio DLNA interno registrado. El test del manifiesto falla con la 0.2.0 y pasa con la corrección.
 
-Una prueba de 42 segundos verifica que el puente obtiene listas actualizadas y fragmentos nuevos, sin limitarse al contenido cargado inicialmente. La prueba del traspaso detecta la liberación anterior y pasa con la pausa.
+La Grundig Android TV no estaba disponible: sigue pendiente comprobar el corte intermitente de Google Cast en ese dispositivo. Esta versión no afirma que ese corte esté ya resuelto.
 
-Descarga el MPP, añádelo como fuente local y parte del APK/XAPK original completo 4.0.2 con los cuatro parches seleccionados. Emite el mismo vídeo al menos dos minutos con pantalla encendida y app abierta. Si falla, copia el informe desde Diagnóstico de carga. Instrucciones en CAST_PREVIEW.md.
-
-La estable permanece en 0.2.0. Falta validar reproducción prolongada en la TV real; este cambio no se presenta como solución ya confirmada del corte.
+Actualiza la fuente `adriviciano/morphe-patch-lunar-edge` en Morphe y parte del APK/XAPK original completo de Lunar Edge 4.0.2 con los cuatro parches seleccionados. Desactiva las fuentes beta locales para usar el paquete principal. Se conservan los datos al actualizar con la misma firma de Morphe.

@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.mutableClassDefBy
 import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.document
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -23,6 +24,19 @@ val enableGoogleCast = patch(
     dependsOn(fixLocalVideoEngine)
     extendWith("extensions/cast.mpe")
     execute {
+        // La lista DLNA existente enlaza este servicio, ausente del manifiesto original.
+        document("AndroidManifest.xml").use { manifest ->
+            val namespace = "http://schemas.android.com/apk/res/android"
+            val application = manifest.getElementsByTagName("application").item(0)
+            val services = manifest.getElementsByTagName("service")
+            val name = "com.android.cast.dlna.dmc.DLNACastService"
+            if ((0 until services.length).none { (services.item(it) as org.w3c.dom.Element).getAttributeNS(namespace, "name") == name }) {
+                val service = manifest.createElement("service")
+                service.setAttributeNS(namespace, "android:name", name)
+                service.setAttributeNS(namespace, "android:exported", "false")
+                application.appendChild(service)
+            }
+        }
         // El traspaso debe pausar, nunca liberar, el reproductor original.
         val pause = mutableClassDefBy(CAST_PLAYER).methods.single {
             it.name == "L" && it.parameterTypes.isEmpty() && it.returnType == "V"

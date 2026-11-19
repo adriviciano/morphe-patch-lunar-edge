@@ -1,14 +1,12 @@
 # Lunar Edge: parches para Morphe
 
-Esta rama contiene la **prueba 0.2.1-beta.1** para cortes de emisión. [Instrucciones de la prueba](CAST_PREVIEW.md). La fuente principal estable sigue en 0.2.0 hasta confirmar la corrección.
-
-Versión estable **0.2.0** para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
+Versión estable **0.2.1** para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
 
 [**Añadir la fuente a Morphe**](https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge) · [Descargar el paquete estable](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/latest)
 
 ## Instalar o actualizar
 
-1. Añade la fuente GitHub `adriviciano/morphe-patch-lunar-edge` en Morphe. Si ya la tenías, actualiza la fuente para obtener **0.2.0**.
+1. Añade la fuente GitHub `adriviciano/morphe-patch-lunar-edge` en Morphe. Si ya la tenías, actualiza la fuente para obtener **0.2.1**.
 2. Selecciona el APK/XAPK **original completo de Lunar Edge 4.0.2** desde almacenamiento.
 3. Mantén seleccionados los **cuatro parches** y parchea e instala con Morphe.
 4. Abre un vídeo y pulsa emitir para seleccionar una Android TV o Chromecast conectado al mismo Wi-Fi.
@@ -36,7 +34,9 @@ Cast depende de la reparación del motor, por lo que no se puede omitir accident
 
 ## Emitir a la TV
 
-El móvil y la TV deben estar en el mismo Wi-Fi. El selector **Google Cast · 0.2.0** busca receptores y permite introducir su IP si falla el descubrimiento. **Otros televisores (DLNA)** abre el selector original.
+La 0.2.1 registra el servicio que faltaba para alimentar la lista DLNA. Se ha confirmado detección y reproducción en una LG 43UK6300PLB con webOS, con más de dos minutos de avance observado. Google Cast pausa ahora el reproductor local mediante L() en lugar de liberarlo mediante O(). Sigue pendiente comprobar si ese cambio resuelve el corte intermitente de Cast en la Grundig; no estaba disponible durante estas pruebas.
+
+El móvil y la TV deben estar en el mismo Wi-Fi. El selector **Google Cast · 0.2.1** busca receptores y permite introducir su IP si falla el descubrimiento. **Otros televisores (DLNA)** abre el selector original.
 
 Para el HLS del motor local, la app mantiene un puente HTTP en el móvil que añade CORS y sirve listas, segmentos, claves e inicializaciones a la TV elegida. Mantén Lunar Edge abierta durante la reproducción. Desde los controles puedes abrir **Diagnóstico de carga** y copiar un informe sin URL ni tokens si aparece un error.
 
@@ -53,12 +53,12 @@ Requiere Java/JDK 21, PowerShell y Android SDK Platform 35 (`ANDROID_HOME`).
 .\scripts\generate-metadata.ps1
 ```
 
-Genera `dist/lunar-edge-patches-0.2.0.mpp`, con clases JVM, DEX para Morphe en Android y la extensión Cast integrada. Las herramientas se descargan con versiones y SHA256 fijados. Se usa la API incluida en Morphe Desktop 2.2.0 y D8 de JADX 1.5.6.
+Genera `dist/lunar-edge-patches-0.2.1.mpp`, con clases JVM, DEX para Morphe en Android y la extensión Cast integrada. Las herramientas se descargan con versiones y SHA256 fijados. Se usa la API incluida en Morphe Desktop 2.2.0 y D8 de JADX 1.5.6.
 
 Ejemplo con Morphe Desktop:
 
 ```powershell
-java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.2.0.mpp -o dist\lunar-edge-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
+java -jar tools\morphe-desktop.jar patch -p dist\lunar-edge-patches-0.2.1.mpp -o dist\lunar-edge-patched.apk 'Lunar+Edge_4.0.2_APKPure.xapk'
 .\scripts\verify.ps1 -ApkPath dist\lunar-edge-patched.apk
 ```
 
