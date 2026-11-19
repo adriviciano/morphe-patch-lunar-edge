@@ -7,6 +7,7 @@ import app.morphe.patcher.patch.mutableClassDefBy
 import app.morphe.patcher.patch.patch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 private const val CAST_ROOT = "Lcom/lunaredge/browser/"
 private const val CAST_PLAYER = "Lchuangyuan/ycj/videolibrary/video/ExoUserPlayer;"
@@ -22,6 +23,14 @@ val enableGoogleCast = patch(
     dependsOn(fixLocalVideoEngine)
     extendWith("extensions/cast.mpe")
     execute {
+        // El traspaso debe pausar, nunca liberar, el reproductor original.
+        val pause = mutableClassDefBy(CAST_PLAYER).methods.single {
+            it.name == "L" && it.parameterTypes.isEmpty() && it.returnType == "V"
+        }
+        val calls = pause.implementation!!.instructions.filterIsInstance<ReferenceInstruction>().map { it.reference.toString() }
+        check(calls.any { it.endsWith("->setPlayWhenReady(Z)V") } && calls.none { it == "${CAST_PLAYER}->R()V" }) {
+            "La función de pausa local ha cambiado: no se añade Cast a esta variante."
+        }
         val playerClass = mutableClassDefBy("${CAST_ROOT}ui/JYAlternativeZero;")
         val fields = playerClass.fields.associate { it.name to it.type }
         check(fields["D"] == "I" && fields["l"] == "Ljava/util/List;" && fields["j"] == CAST_PLAYER && fields["k"] == "${CAST_ROOT}netbean/JybThrowTask;") {

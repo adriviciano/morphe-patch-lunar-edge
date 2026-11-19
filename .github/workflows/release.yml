@@ -26,7 +26,7 @@ jobs:
         run: ./build.ps1
       - name: Test Cast protocol and main patch package
         shell: pwsh
-        run: ./scripts/test-cast.ps1
+        run: ./scripts/test-cast.ps1 -Streaming
       - name: Verify Morphe metadata
         shell: pwsh
         run: |

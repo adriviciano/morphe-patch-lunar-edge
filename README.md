@@ -1,5 +1,7 @@
 # Lunar Edge: parches para Morphe
 
+Esta rama contiene la **prueba 0.2.1-beta.1** para cortes de emisión. [Instrucciones de la prueba](CAST_PREVIEW.md). La fuente principal estable sigue en 0.2.0 hasta confirmar la corrección.
+
 Versión estable **0.2.0** para **Lunar Edge 4.0.2 (40002)**, paquete `com.lunaredge.browser`.
 
 [**Añadir la fuente a Morphe**](https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge) · [Descargar el paquete estable](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/latest)

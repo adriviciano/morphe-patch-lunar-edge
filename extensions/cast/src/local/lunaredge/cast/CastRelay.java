@@ -27,6 +27,10 @@ public final class CastRelay implements Closeable {
     private final AtomicInteger failures = new AtomicInteger();
     private final AtomicInteger resources = new AtomicInteger();
     private final AtomicLong bytesSent = new AtomicLong();
+    private final AtomicInteger idleConnections = new AtomicInteger();
+    private final AtomicInteger readFailures = new AtomicInteger();
+    private final AtomicInteger writeFailures = new AtomicInteger();
+    private volatile String lastError = "ninguno";
     private volatile boolean closed;
     private volatile int lastStatus;
 
@@ -42,7 +46,7 @@ public final class CastRelay implements Closeable {
                 if (!receiver.equals(socket.getInetAddress())) { socket.close(); continue; }
                 sockets.add(socket);
                 try { workers.execute(() -> serve(socket)); }
-                catch (RejectedExecutionException error) { sockets.remove(socket); socket.close(); }
+                catch (RejectedExecutionException error) { lastError = "cola_llena"; failures.incrementAndGet(); sockets.remove(socket); socket.close(); }
             } catch (IOException error) { if (!closed) failures.incrementAndGet(); }
         });
     }
@@ -65,15 +69,19 @@ public final class CastRelay implements Closeable {
 
     public String report() {
         return "Puente CORS: solicitudes TV " + requests.get() + "; listas " + playlists.get() + "; recursos " + resources.get() +
-                "; bytes " + bytesSent.get() + "; fallos " + failures.get() + "; último HTTP " + lastStatus;
+                "; bytes " + bytesSent.get() + "; fallos " + failures.get() + "; último HTTP " + lastStatus +
+                "\nDetalle puente: conexiones sin petición " + idleConnections.get() + "; errores lectura " + readFailures.get() +
+                "; errores escritura " + writeFailures.get() + "; último fallo " + lastError;
     }
 
     private void serve(Socket socket) {
         HttpURLConnection upstream = null;
+        String phase = "cabecera_tv";
         try (Socket client = socket) {
             client.setSoTimeout(10000);
             BufferedInputStream input = new BufferedInputStream(client.getInputStream());
             String request = line(input);
+            if (request.isEmpty()) { idleConnections.incrementAndGet(); return; }
             String[] first = request.split(" ", 3);
             if (first.length != 3) return;
             Map<String, String> headers = new HashMap<>();
@@ -97,6 +105,7 @@ public final class CastRelay implements Closeable {
             if ("OPTIONS".equals(method)) { response(output, 204, origin, Collections.emptyMap()); return; }
             if (!"GET".equals(method) && !"HEAD".equals(method)) { response(output, 405, origin, Collections.emptyMap()); return; }
             boolean head = "HEAD".equals(method);
+            phase = "conexion_motor";
             upstream = (HttpURLConnection) source.toURL().openConnection();
             upstreams.add(upstream);
             upstream.setConnectTimeout(10000);
@@ -109,7 +118,7 @@ public final class CastRelay implements Closeable {
             if (range != null && range.matches("bytes=[0-9]*-[0-9]*(,[0-9]*-[0-9]*)*") && !knownPlaylist) upstream.setRequestProperty("Range", range);
             int code = upstream.getResponseCode();
             lastStatus = code;
-            if (code >= 400) failures.incrementAndGet();
+            if (code >= 400) { failures.incrementAndGet(); lastError = "HTTP_" + code; }
             String type = upstream.getContentType();
             boolean hls = knownPlaylist || type != null && type.toLowerCase(Locale.ROOT).contains("mpegurl");
             Map<String, String> outgoing = new LinkedHashMap<>();
@@ -122,6 +131,7 @@ public final class CastRelay implements Closeable {
             InputStream body = code >= 400 ? upstream.getErrorStream() : upstream.getInputStream();
             if (body == null) { response(output, code, origin, outgoing); return; }
             try (BufferedInputStream stream = new BufferedInputStream(body)) {
+                phase = "lectura_motor";
                 stream.mark(16);
                 byte[] prefix = new byte[10];
                 int count = stream.read(prefix);
@@ -131,22 +141,36 @@ public final class CastRelay implements Closeable {
                     byte[] data = rewrite(readPlaylist(stream), upstream.getURL().toURI()).getBytes(StandardCharsets.UTF_8);
                     outgoing.put("Content-Type", "application/vnd.apple.mpegurl");
                     outgoing.put("Content-Length", Integer.toString(data.length));
+                    phase = "escritura_tv";
                     response(output, 200, origin, outgoing);
                     output.write(data);
                     playlists.incrementAndGet();
                 } else {
                     for (String key : new String[]{"Content-Length", "Content-Range", "Accept-Ranges"}) copyHeader(upstream, outgoing, key);
+                    phase = "escritura_tv";
                     response(output, code, origin, outgoing);
                     resources.incrementAndGet();
                     byte[] buffer = new byte[32768];
-                    while (!closed && (count = stream.read(buffer)) != -1) {
+                    while (!closed) {
+                        phase = "lectura_motor";
+                        count = stream.read(buffer);
+                        if (count == -1) break;
+                        phase = "escritura_tv";
                         output.write(buffer, 0, count);
                         bytesSent.addAndGet(count);
                     }
                 }
             }
         } catch (Exception error) {
-            if (!closed) failures.incrementAndGet();
+            if (!closed) {
+                if ("cabecera_tv".equals(phase)) idleConnections.incrementAndGet();
+                else {
+                    failures.incrementAndGet();
+                    if ("escritura_tv".equals(phase)) writeFailures.incrementAndGet();
+                    else readFailures.incrementAndGet();
+                    lastError = phase + "/" + error.getClass().getSimpleName();
+                }
+            }
         } finally {
             if (upstream != null) { upstreams.remove(upstream); upstream.disconnect(); }
             sockets.remove(socket);

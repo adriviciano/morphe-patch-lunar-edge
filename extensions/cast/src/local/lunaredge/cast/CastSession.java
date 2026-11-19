@@ -46,6 +46,9 @@ public final class CastSession implements Closeable {
     private final ScheduledExecutorService workers = Executors.newScheduledThreadPool(2);
     private volatile boolean closed;
     private volatile boolean loaded;
+    private final long startedAt = System.currentTimeMillis();
+    private volatile String lastState = "sin estado";
+    private volatile String endCause = "ninguno";
     private volatile long lastMessage = System.currentTimeMillis();
     private volatile String transport;
     private volatile int mediaSession;
@@ -73,7 +76,9 @@ public final class CastSession implements Closeable {
 
     public String relayReport() {
         CastRelay current = relay;
-        return current == null ? "Puente CORS: no iniciado" : current.report();
+        return "Sesión Cast: activa " + !closed + "; segundos " + (System.currentTimeMillis() - startedAt) / 1000 +
+                "; reproducción confirmada " + loaded + "; estado " + lastState + "; cierre " + endCause + "\n" +
+                (current == null ? "Puente CORS: no iniciado" : current.report());
     }
 
     public void connect(Socket connection, String host, int port) {
@@ -102,14 +107,14 @@ public final class CastSession implements Closeable {
                         if (System.currentTimeMillis() - lastMessage > 40000) throw new IOException("La TV no responde");
                         send("receiver-0", HEARTBEAT, object("type", "PING"));
                         if (transport != null) send(transport, MEDIA, object("type", "GET_STATUS", "requestId", next()));
-                    } catch (Exception error) { fail("Se ha perdido la conexión con la TV"); }
+                    } catch (Exception error) { fail("Se ha perdido la conexión con la TV", "heartbeat_" + error.getClass().getSimpleName()); }
                 }, 5, 5, TimeUnit.SECONDS);
-                workers.schedule(() -> { if (!loaded) fail("La TV no ha podido abrir el vídeo. Comprueba la red y el formato."); }, 35, TimeUnit.SECONDS);
+                workers.schedule(() -> { if (!loaded) fail("La TV no ha podido abrir el vídeo. Comprueba la red y el formato.", "inicio_35s"); }, 35, TimeUnit.SECONDS);
                 DataInputStream input = new DataInputStream(socket.getInputStream());
                 while (!closed) handle(CastWire.read(input));
             } catch (Exception error) {
                 try { connection.close(); } catch (IOException ignored) { }
-                if (!closed) fail("No se pudo conectar con Google Cast: " + error.getClass().getSimpleName());
+                if (!closed) fail("No se pudo conectar con Google Cast: " + error.getClass().getSimpleName(), "conexion_" + error.getClass().getSimpleName());
             }
         });
     }
@@ -157,17 +162,18 @@ public final class CastSession implements Closeable {
             JSONObject media = status.optJSONObject("media");
             if (media != null) duration = media.optDouble("duration", duration);
             String state = status.optString("playerState");
+            lastState = "PLAYING".equals(state) || "PAUSED".equals(state) || "BUFFERING".equals(state) || "IDLE".equals(state) ? state : "otro";
             if ("IDLE".equals(state) && "ERROR".equals(status.optString("idleReason"))) {
-                fail("La TV no puede reproducir esta fuente de vídeo.");
+                fail("La TV no puede reproducir esta fuente de vídeo.", "media_error");
             } else {
                 if ("PLAYING".equals(state) || "PAUSED".equals(state)) loaded = true;
                 listener.changed("PLAYING".equals(state) ? "Reproduciendo en la TV" :
                         "PAUSED".equals(state) ? "En pausa" : "BUFFERING".equals(state) ? "Cargando…" : "Finalizado", position, duration);
             }
         } else if ("LAUNCH_ERROR".equals(type) || "LOAD_FAILED".equals(type) || "INVALID_REQUEST".equals(type)) {
-            fail("La TV ha rechazado la reproducción (" + type + ", código " + data.optString("detailedErrorCode", data.optString("reason", data.optString("errorCode", "no indicado"))) + ").");
+            fail("La TV ha rechazado la reproducción (" + type + ", código " + data.optString("detailedErrorCode", data.optString("reason", data.optString("errorCode", "no indicado"))) + ").", type);
         } else if (CONNECTION.equals(envelope.namespace) && "CLOSE".equals(type)) {
-            fail("La TV ha cerrado la sesión de emisión.");
+            fail("La TV ha cerrado la sesión de emisión.", "receiver_close");
         }
     }
 
@@ -176,7 +182,7 @@ public final class CastSession implements Closeable {
             try {
                 if (transport != null && mediaSession != 0) send(transport, MEDIA,
                         object("type", command, "mediaSessionId", mediaSession, "requestId", next()));
-            } catch (Exception error) { fail("No se pudo enviar el control a la TV"); }
+            } catch (Exception error) { fail("No se pudo enviar el control a la TV", "control_error"); }
         });
     }
 
@@ -186,7 +192,7 @@ public final class CastSession implements Closeable {
                 if (transport != null && mediaSession != 0) send(transport, MEDIA,
                         object("type", "SEEK", "mediaSessionId", mediaSession, "requestId", next(),
                                 "currentTime", Math.max(0, seconds), "resumeState", "PLAYBACK_START"));
-            } catch (Exception error) { fail("No se pudo cambiar la posición del vídeo"); }
+            } catch (Exception error) { fail("No se pudo cambiar la posición del vídeo", "seek_error"); }
         });
     }
 
@@ -196,11 +202,12 @@ public final class CastSession implements Closeable {
             try {
                 send("receiver-0", RECEIVER, object("type", "SET_VOLUME", "requestId", next(),
                         "volume", object("level", Math.max(0, Math.min(1, level)))));
-            } catch (Exception error) { fail("No se pudo cambiar el volumen de la TV"); }
+            } catch (Exception error) { fail("No se pudo cambiar el volumen de la TV", "volume_error"); }
         });
     }
 
     public void stop() {
+        endCause = "usuario_stop";
         workers.execute(() -> {
             try {
                 if (receiverSession != null) send("receiver-0", RECEIVER,
@@ -215,9 +222,10 @@ public final class CastSession implements Closeable {
         if (closed || output == null) throw new IOException("Sesión Cast cerrada");
         CastWire.write(output, CastWire.encode(sender, destination, namespace, data.toString()));
     }
-    private void fail(String message) { if (!closed) { close(); listener.failed(message); } }
+    private void fail(String message, String cause) { if (!closed) { endCause = cause; close(); listener.failed(message); } }
     @Override public synchronized void close() {
         closed = true;
+        if ("ninguno".equals(endCause)) endCause = "cierre_local";
         if (relay != null) relay.close();
         workers.shutdownNow();
         try { if (socket != null) socket.close(); } catch (IOException ignored) { }

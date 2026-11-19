@@ -66,6 +66,12 @@ public final class CastRelayTest {
             HttpURLConnection denied = get(relay.url(root + "/denied"));
             require(denied.getResponseCode() == 403 && denied.getHeaderField("Access-Control-Allow-Origin") != null); denied.disconnect();
             require(relay.report().contains("listas 2") && !relay.report().contains("PRIVATE_TOKEN"));
+            require(relay.report().contains("último fallo HTTP_403"));
+            // Una preconexión de la TV sin HTTP no equivale a un error del flujo de vídeo.
+            try (Socket idle = new Socket("127.0.0.1", new URL(url).getPort())) { }
+            long deadline = System.nanoTime() + 2000000000L;
+            while (relay.report().contains("conexiones sin petición 0") && System.nanoTime() < deadline) Thread.sleep(10);
+            require(!relay.report().contains("conexiones sin petición 0") && relay.report().contains("fallos 1;"));
             try (CastRelay restricted = new CastRelay(InetAddress.getByName("127.0.0.1"), InetAddress.getByName("127.0.0.2"))) {
                 HttpURLConnection blocked = get(restricted.url(root + "/master.m3u8"));
                 try { blocked.getResponseCode(); throw new AssertionError("Aceptó otro dispositivo"); }

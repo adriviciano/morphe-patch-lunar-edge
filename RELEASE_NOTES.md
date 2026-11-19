@@ -1,13 +1,11 @@
-# Versión estable 0.2.0
+# Prueba de corte Cast: 0.2.1-beta.1
 
-Google Cast se incorpora al paquete principal de Morphe y queda activado por defecto junto a la reparación del motor y los dos parches de anuncios.
+Corrige el traspaso al receptor: pausa el reproductor local en lugar de liberarlo. En la APK 4.0.2, O llama a R y destruye el reproductor; L pausa sin destruirlo. El parche verifica la función original antes de aplicarse.
 
-La beta 4 resolvió el fallo LOAD_FAILED del HLS local mediante un puente CORS. El usuario confirmó reproducción real en su Grundig Android TV. Esta versión promueve ese mismo comportamiento a estable: descubrimiento, conexión, puente HLS/CORS, controles y alternativa DLNA. Se conserva el diagnóstico copiable sin URL ni tokens.
+Añade diagnóstico de estado de sesión y motivo de cierre, y distingue errores al leer del motor, escribir a la TV y conexiones sin petición completa. No modifica timeouts, heartbeat ni el comportamiento del puente HLS. El contador antiguo de fallos no bastaba para atribuir las interrupciones a la red.
 
-## Obtenerla
+Una prueba de 42 segundos verifica que el puente obtiene listas actualizadas y fragmentos nuevos, sin limitarse al contenido cargado inicialmente. La prueba del traspaso detecta la liberación anterior y pasa con la pausa.
 
-Actualiza la fuente `adriviciano/morphe-patch-lunar-edge` en Morphe, o añádela desde https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge. Selecciona el APK/XAPK original completo de Lunar Edge 4.0.2, con los cuatro parches seleccionados. Si usaste fuentes beta locales, desactívalas para esta instalación. El único paquete principal es `lunar-edge-patches-0.2.0.mpp`.
+Descarga el MPP, añádelo como fuente local y parte del APK/XAPK original completo 4.0.2 con los cuatro parches seleccionados. Emite el mismo vídeo al menos dos minutos con pantalla encendida y app abierta. Si falla, copia el informe desde Diagnóstico de carga. Instrucciones en CAST_PREVIEW.md.
 
-El móvil y la TV deben compartir Wi-Fi. Mantén Lunar Edge abierta durante la emisión. Otros modelos, fuentes, subtítulos, cambios de episodio y reproducción prolongada con pantalla apagada no se han validado exhaustivamente.
-
-Las pruebas automáticas verifican protocolo Cast, diagnóstico, reescritura HLS, CORS, recursos dependientes y Range. También se verifica el paquete principal con cuatro parches predeterminados y la dependencia obligatoria del motor.
+La estable permanece en 0.2.0. Falta validar reproducción prolongada en la TV real; este cambio no se presenta como solución ya confirmada del corte.
