@@ -1,11 +1,9 @@
-# Emisión en segundo plano · 0.3.0-beta.1
+# Versión principal 0.3.0: emisión en segundo plano
 
-Añade un servicio visible de conexión a TV para mantener el motor, el puente y la sesión al bloquear la pantalla o cambiar de app. Se activa únicamente al elegir receptor y muestra una notificación con **Dejar de emitir**. Incluye Google Cast y DLNA/LG.
+Integra en la fuente habitual de Morphe el soporte de emisión con pantalla apagada o cambiando a otra app, tanto para Google Cast como para DLNA/LG. Se inicia un servicio visible al elegir la TV y aparece una notificación con **Dejar de emitir**. Mantiene CPU y conexión durante la sesión y libera los recursos al terminar.
 
-Protege onPause/onResume únicamente mientras esa Activity emite, sin omitir las llamadas a super. Mantiene CPU y red durante la sesión y libera los recursos al detener, terminar o desconectar; un cierre antiguo no puede detener una emisión nueva. Conserva los cuatro parches y la reparación del servicio DLNA.
+Actualiza la fuente `adriviciano/morphe-patch-lunar-edge` en Morphe, selecciona el APK/XAPK original completo de Lunar Edge 4.0.2 y los cuatro parches. Desactiva las fuentes beta locales para utilizar el paquete principal. No hace falta importar un MPP manualmente.
 
-Instala el MPP como fuente local y parte del APK/XAPK original completo 4.0.2 con los cuatro parches. Si Android lo solicita, permite notificaciones. Prueba cambiando de app y después bloqueando la pantalla, al menos dos minutos en cada situación; comprueba también que al detener desaparece la notificación.
+Permite notificaciones si Android lo solicita. Cuando el vídeo se reproduzca en la TV, cambia de app y bloquea después la pantalla; comprueba que continúa y que al detener desaparece la notificación.
 
-**Pendiente de prueba física**: no hay móvil conectado y el usuario probará después. Se verifica compilación, manifiesto, DEX y propiedad/cierre de sesión; no se afirma que la pantalla apagada esté ya validada. La estable principal permanece en **0.2.1**.
-
-Instrucciones y límites completos en CAST_PREVIEW.md.
+La compilación, las comprobaciones de manifiesto/DEX y las regresiones de sesiones y streaming pasan. **La prueba física con pantalla apagada sigue pendiente**: el usuario la hará después. La publicación en la fuente principal se realiza a petición expresa, sin dar esa prueba por superada.

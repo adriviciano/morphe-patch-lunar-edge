@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.3.0-beta.1'
+    [string]$Version = '0.3.0'
 )
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot

@@ -1,4 +1,4 @@
-param([string]$Version = '0.3.0-beta.1', [switch]$Streaming)
+param([string]$Version = '0.3.0', [switch]$Streaming)
 $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 $morphe = Join-Path $PWD 'tools\morphe-desktop.jar'

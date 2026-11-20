@@ -1,11 +1,11 @@
-# Prueba 0.3.0-beta.1: emisión con pantalla apagada
+# Emisión en segundo plano · 0.3.0
 
-La estable sigue siendo 0.2.1. Esta beta añade mantenimiento de segundo plano para Google Cast y DLNA, incluida la LG. Falta comprobarlo en un móvil real: el usuario hará la prueba después.
+La versión principal 0.3.0 incorpora el mantenimiento de segundo plano para Google Cast y DLNA/LG. Falta comprobarlo en un móvil real: el usuario hará la prueba después.
 
 ## Instalar y probar
 
-1. Descarga [lunar-edge-patches-0.3.0-beta.1.mpp](https://github.com/adriviciano/morphe-patch-lunar-edge/releases/download/v0.3.0-beta.1/lunar-edge-patches-0.3.0-beta.1.mpp).
-2. Añádelo como fuente local en Morphe y utiliza solo esa fuente para esta prueba.
+1. Actualiza la fuente GitHub `adriviciano/morphe-patch-lunar-edge` en Morphe a **0.3.0**. [Añadir la fuente](https://morphe.software/add-source?github=adriviciano/morphe-patch-lunar-edge).
+2. Utiliza esa fuente principal y desactiva las fuentes beta locales anteriores. No hace falta importar un MPP manualmente.
 3. Selecciona el APK/XAPK original completo de Lunar Edge 4.0.2 y los cuatro parches. No uses una APK con Cast aplicado.
 4. Parchea e instala conservando la misma firma de Morphe. Inicia un vídeo y selecciona la TV; en LG usa «Otros televisores (DLNA)».
 5. Permite las notificaciones si Android lo solicita. Al emitir debe aparecer **Emitiendo a TV** con **Dejar de emitir**.
