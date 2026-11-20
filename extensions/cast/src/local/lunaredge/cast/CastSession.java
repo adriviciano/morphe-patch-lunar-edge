@@ -58,6 +58,7 @@ public final class CastSession implements Closeable {
     private boolean launchSent;
     private SSLSocket socket;
     private DataOutputStream output;
+    private SessionLease background;
 
     public CastSession(String url, String title, double initialPosition, Listener listener) {
         this.url = url;
@@ -67,6 +68,10 @@ public final class CastSession implements Closeable {
     }
 
     public boolean isActive() { return !closed; }
+    public synchronized void attachBackground(SessionLease lease) {
+        background = lease;
+        if (closed) lease.close();
+    }
 
     // Se configura en el hilo principal, pero el servidor solo se abre en el trabajador de conexión.
     public void useLocalRelay(String address, java.net.InetAddress receiver) {
@@ -166,9 +171,10 @@ public final class CastSession implements Closeable {
             if ("IDLE".equals(state) && "ERROR".equals(status.optString("idleReason"))) {
                 fail("La TV no puede reproducir esta fuente de vídeo.", "media_error");
             } else {
-                if ("PLAYING".equals(state) || "PAUSED".equals(state)) loaded = true;
+                if ("PLAYING".equals(state) || "PAUSED".equals(state)) { loaded = true; CastBackground.castReady(this); }
                 listener.changed("PLAYING".equals(state) ? "Reproduciendo en la TV" :
                         "PAUSED".equals(state) ? "En pausa" : "BUFFERING".equals(state) ? "Cargando…" : "Finalizado", position, duration);
+                if ("IDLE".equals(state) && ("FINISHED".equals(status.optString("idleReason")) || "CANCELLED".equals(status.optString("idleReason")))) close();
             }
         } else if ("LAUNCH_ERROR".equals(type) || "LOAD_FAILED".equals(type) || "INVALID_REQUEST".equals(type)) {
             fail("La TV ha rechazado la reproducción (" + type + ", código " + data.optString("detailedErrorCode", data.optString("reason", data.optString("errorCode", "no indicado"))) + ").", type);
@@ -227,6 +233,7 @@ public final class CastSession implements Closeable {
         closed = true;
         if ("ninguno".equals(endCause)) endCause = "cierre_local";
         if (relay != null) relay.close();
+        if (background != null) background.close();
         workers.shutdownNow();
         try { if (socket != null) socket.close(); } catch (IOException ignored) { }
     }

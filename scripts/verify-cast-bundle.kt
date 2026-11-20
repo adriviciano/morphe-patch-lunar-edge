@@ -17,6 +17,7 @@ fun main(args: Array<String>) {
         check(extension.copyOfRange(0, 3).toString(Charsets.US_ASCII) == "dex")
         check(extension.toString(Charsets.ISO_8859_1).contains("Google Cast"))
         check(extension.toString(Charsets.ISO_8859_1).contains("CastRelay"))
+        check(extension.toString(Charsets.ISO_8859_1).contains("CastKeepAliveService"))
         check(!extension.toString(Charsets.ISO_8859_1).contains("LunarDiag"))
     }
     println("OK: cuatro parches predeterminados, motor obligatorio para Cast y extensión DEX.")

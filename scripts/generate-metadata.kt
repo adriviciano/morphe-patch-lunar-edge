@@ -38,8 +38,8 @@ fun main(args: Array<String>) {
     File("patches-list.json").writeText(JSONObject(mapOf("version" to version, "patches" to patches)).toString(2) + "\n")
     val repository = "https://github.com/adriviciano/morphe-patch-lunar-edge"
     val metadata = mapOf(
-        "created_at" to "2026-11-19T15:57:53",
-        "description" to "Lunar Edge 4.0.2: repara descubrimiento DLNA para LG, conserva Google Cast, pausa sin liberar el reproductor local y amplía el diagnóstico. Reproducción DLNA confirmada en LG 43UK6300PLB.",
+        "created_at" to "2026-11-20T09:03:48",
+        "description" to "Prueba de emisión en segundo plano para Lunar Edge 4.0.2: servicio de conexión a TV, notificación para detener y mantenimiento del motor durante Google Cast y DLNA. Pendiente validación con pantalla apagada en móvil real.",
         "download_url" to "$repository/releases/download/v$version/lunar-edge-patches-$version.mpp",
         "signature_download_url" to "",
         "version" to version

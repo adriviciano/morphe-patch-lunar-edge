@@ -1,11 +1,11 @@
-# Versión estable 0.2.1
+# Emisión en segundo plano · 0.3.0-beta.1
 
-- Repara la detección DLNA: declara el servicio `DLNACastService` que utiliza la lista de televisores y faltaba en el manifiesto original. La LG 43UK6300PLB con webOS responde y aparece tras la corrección.
-- Pausa el reproductor local durante el traspaso a Google Cast, en lugar de liberarlo. La semántica del método se verifica al parchear.
-- Amplía el diagnóstico con estado y cierre de la sesión, errores de lectura/escritura y conexiones que no completan una petición. El contador anterior no permitía atribuir los fallos a microcortes.
+Añade un servicio visible de conexión a TV para mantener el motor, el puente y la sesión al bloquear la pantalla o cambiar de app. Se activa únicamente al elegir receptor y muestra una notificación con **Dejar de emitir**. Incluye Google Cast y DLNA/LG.
 
-Validación: actualización instalada con la firma de Morphe, usuario confirma vídeo en la LG y consultas AVTransport muestran reproducción y avance continuo durante más de dos minutos. Prueba de streaming del puente: 42 segundos, 15 listas y 15 fragmentos nuevos. Verificación de APK ARM64 y servicio DLNA interno registrado. El test del manifiesto falla con la 0.2.0 y pasa con la corrección.
+Protege onPause/onResume únicamente mientras esa Activity emite, sin omitir las llamadas a super. Mantiene CPU y red durante la sesión y libera los recursos al detener, terminar o desconectar; un cierre antiguo no puede detener una emisión nueva. Conserva los cuatro parches y la reparación del servicio DLNA.
 
-La Grundig Android TV no estaba disponible: sigue pendiente comprobar el corte intermitente de Google Cast en ese dispositivo. Esta versión no afirma que ese corte esté ya resuelto.
+Instala el MPP como fuente local y parte del APK/XAPK original completo 4.0.2 con los cuatro parches. Si Android lo solicita, permite notificaciones. Prueba cambiando de app y después bloqueando la pantalla, al menos dos minutos en cada situación; comprueba también que al detener desaparece la notificación.
 
-Actualiza la fuente `adriviciano/morphe-patch-lunar-edge` en Morphe y parte del APK/XAPK original completo de Lunar Edge 4.0.2 con los cuatro parches seleccionados. Desactiva las fuentes beta locales para usar el paquete principal. Se conservan los datos al actualizar con la misma firma de Morphe.
+**Pendiente de prueba física**: no hay móvil conectado y el usuario probará después. Se verifica compilación, manifiesto, DEX y propiedad/cierre de sesión; no se afirma que la pantalla apagada esté ya validada. La estable principal permanece en **0.2.1**.
+
+Instrucciones y límites completos en CAST_PREVIEW.md.
